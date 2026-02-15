@@ -3,6 +3,12 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+    <meta name="apple-mobile-web-app-title" content="Prayer Times">
+    <meta name="theme-color" content="#ffffff">
+
     <title>Prayer Times</title>
     <style>
         :root {
@@ -26,6 +32,8 @@
             min-height: 100vh;
             color: var(--primary);
             padding-bottom: 40px;
+            padding-top: env(safe-area-inset-top);
+            padding-bottom: env(safe-area-inset-bottom);
         }
 
         /* --- Header --- */
@@ -208,7 +216,6 @@
         const PRAYER_NAMES = ['Fajr', 'Sunrise', 'Dhuhr', 'Asr', 'Maghrib', 'Isha'];
         const MY_MAP = { 'fajr': 'Fajr', 'syuruk': 'Sunrise', 'dhuhr': 'Dhuhr', 'asr': 'Asr', 'maghrib': 'Maghrib', 'isha': 'Isha' };
         
-        // --- DATA SOURCE ---
         const LOC_INFO = {
             "ACJU": { name: "Colombo", tz: "Asia/Colombo" },
             "MY,WLY01": { name: "KL", tz: "Asia/Kuala_Lumpur" },
@@ -216,100 +223,74 @@
             "GLOBAL,London,United Kingdom,3,51.5074,-0.1278": { name: "London", tz: "Europe/London" }
         };
 
-        // Raw CSV data from official ACJU PDF
-        const ACJU_RAW = {
-            "2": `1,5:10 AM,6:30 AM,12:26 PM,3:47 PM,6:20 PM,7:32 PM
-2,5:10 AM,6:30 AM,12:26 PM,3:47 PM,6:21 PM,7:32 PM
-3,5:10 AM,6:30 AM,12:26 PM,3:48 PM,6:21 PM,7:32 PM
-4,5:10 AM,6:30 AM,12:26 PM,3:48 PM,6:21 PM,7:32 PM
-5,5:10 AM,6:30 AM,12:26 PM,3:48 PM,6:21 PM,7:33 PM
-6,5:10 AM,6:29 AM,12:26 PM,3:48 PM,6:22 PM,7:33 PM
-7,5:10 AM,6:29 AM,12:26 PM,3:48 PM,6:22 PM,7:33 PM
-8,5:10 AM,6:29 AM,12:26 PM,3:48 PM,6:22 PM,7:33 PM
-9,5:10 AM,6:29 AM,12:26 PM,3:48 PM,6:22 PM,7:33 PM
-10,5:10 AM,6:29 AM,12:26 PM,3:48 PM,6:22 PM,7:33 PM
-11,5:10 AM,6:29 AM,12:26 PM,3:47 PM,6:23 PM,7:33 PM
-12,5:10 AM,6:29 AM,12:26 PM,3:47 PM,6:23 PM,7:33 PM
-13,5:10 AM,6:29 AM,12:26 PM,3:47 PM,6:23 PM,7:33 PM
-14,5:10 AM,6:28 AM,12:26 PM,3:47 PM,6:23 PM,7:33 PM
-15,5:10 AM,6:28 AM,12:26 PM,3:47 PM,6:23 PM,7:33 PM
-16,5:10 AM,6:28 AM,12:26 PM,3:47 PM,6:23 PM,7:33 PM
-17,5:10 AM,6:28 AM,12:26 PM,3:47 PM,6:23 PM,7:33 PM
-18,5:10 AM,6:28 AM,12:26 PM,3:47 PM,6:24 PM,7:33 PM
-19,5:09 AM,6:27 AM,12:26 PM,3:46 PM,6:24 PM,7:33 PM
-20,5:09 AM,6:27 AM,12:26 PM,3:46 PM,6:24 PM,7:33 PM
-21,5:09 AM,6:27 AM,12:26 PM,3:46 PM,6:24 PM,7:33 PM
-22,5:09 AM,6:27 AM,12:26 PM,3:46 PM,6:24 PM,7:33 PM
-23,5:09 AM,6:26 AM,12:26 PM,3:45 PM,6:24 PM,7:33 PM
-24,5:08 AM,6:26 AM,12:25 PM,3:45 PM,6:24 PM,7:33 PM
-25,5:08 AM,6:25 AM,12:25 PM,3:45 PM,6:24 PM,7:33 PM
-26,5:08 AM,6:25 AM,12:25 PM,3:44 PM,6:24 PM,7:33 PM
-27,5:08 AM,6:25 AM,12:25 PM,3:44 PM,6:24 PM,7:33 PM
-28,5:07 AM,6:25 AM,12:25 PM,3:44 PM,6:24 PM,7:33 PM`,
-            "3": `1,5:07 AM,6:24 AM,12:24 PM,3:43 PM,6:24 PM,7:33 PM
-2,5:06 AM,6:23 AM,12:24 PM,3:42 PM,6:24 PM,7:33 PM
-3,5:06 AM,6:23 AM,12:24 PM,3:42 PM,6:24 PM,7:33 PM
-4,5:06 AM,6:23 AM,12:24 PM,3:41 PM,6:24 PM,7:33 PM
-5,5:05 AM,6:22 AM,12:23 PM,3:41 PM,6:24 PM,7:33 PM
-6,5:05 AM,6:22 AM,12:23 PM,3:40 PM,6:24 PM,7:33 PM
-7,5:05 AM,6:21 AM,12:23 PM,3:40 PM,6:24 PM,7:32 PM
-8,5:04 AM,6:21 AM,12:23 PM,3:39 PM,6:24 PM,7:32 PM
-9,5:04 AM,6:20 AM,12:23 PM,3:39 PM,6:24 PM,7:32 PM
-10,5:03 AM,6:20 AM,12:22 PM,3:38 PM,6:24 PM,7:32 PM
-11,5:03 AM,6:20 AM,12:22 PM,3:37 PM,6:23 PM,7:32 PM
-12,5:02 AM,6:19 AM,12:22 PM,3:37 PM,6:23 PM,7:32 PM
-13,5:02 AM,6:19 AM,12:21 PM,3:36 PM,6:23 PM,7:32 PM
-14,5:02 AM,6:18 AM,12:21 PM,3:36 PM,6:23 PM,7:32 PM
-15,5:01 AM,6:18 AM,12:21 PM,3:35 PM,6:23 PM,7:32 PM
-16,5:01 AM,6:17 AM,12:21 PM,3:34 PM,6:23 PM,7:32 PM
-17,5:00 AM,6:17 AM,12:20 PM,3:34 PM,6:23 PM,7:31 PM
-18,5:00 AM,6:16 AM,12:20 PM,3:33 PM,6:23 PM,7:31 PM
-19,4:59 AM,6:16 AM,12:20 PM,3:32 PM,6:23 PM,7:31 PM
-20,4:59 AM,6:15 AM,12:19 PM,3:31 PM,6:23 PM,7:31 PM
-21,4:58 AM,6:15 AM,12:19 PM,3:31 PM,6:23 PM,7:31 PM
-22,4:58 AM,6:14 AM,12:19 PM,3:30 PM,6:22 PM,7:31 PM
-23,4:57 AM,6:14 AM,12:19 PM,3:29 PM,6:22 PM,7:31 PM
-24,4:57 AM,6:13 AM,12:18 PM,3:28 PM,6:22 PM,7:31 PM
-25,4:56 AM,6:13 AM,12:18 PM,3:28 PM,6:22 PM,7:31 PM
-26,4:56 AM,6:12 AM,12:18 PM,3:27 PM,6:22 PM,7:31 PM
-27,4:55 AM,6:12 AM,12:17 PM,3:26 PM,6:22 PM,7:31 PM
-28,4:55 AM,6:11 AM,12:17 PM,3:25 PM,6:22 PM,7:30 PM
-29,4:54 AM,6:11 AM,12:17 PM,3:24 PM,6:22 PM,7:30 PM
-30,4:53 AM,6:10 AM,12:16 PM,3:23 PM,6:22 PM,7:30 PM
-31,4:53 AM,6:10 AM,12:16 PM,3:22 PM,6:21 PM,7:30 PM`,
-            "4": `1,4:52 AM,6:09 AM,12:16 PM,3:21 PM,6:21 PM,7:30 PM
-2,4:52 AM,6:09 AM,12:16 PM,3:20 PM,6:21 PM,7:30 PM
-3,4:51 AM,6:08 AM,12:15 PM,3:20 PM,6:21 PM,7:30 PM
-4,4:51 AM,6:08 AM,12:15 PM,3:19 PM,6:21 PM,7:30 PM
-5,4:50 AM,6:07 AM,12:15 PM,3:18 PM,6:21 PM,7:30 PM
-6,4:50 AM,6:07 AM,12:14 PM,3:17 PM,6:21 PM,7:30 PM
-7,4:49 AM,6:06 AM,12:14 PM,3:16 PM,6:21 PM,7:30 PM
-8,4:48 AM,6:06 AM,12:14 PM,3:15 PM,6:21 PM,7:30 PM
-9,4:48 AM,6:05 AM,12:14 PM,3:16 PM,6:21 PM,7:30 PM
-10,4:47 AM,6:05 AM,12:13 PM,3:16 PM,6:21 PM,7:30 PM
-11,4:47 AM,6:05 AM,12:13 PM,3:17 PM,6:20 PM,7:30 PM
-12,4:46 AM,6:04 AM,12:13 PM,3:18 PM,6:20 PM,7:30 PM
-13,4:46 AM,6:04 AM,12:12 PM,3:18 PM,6:20 PM,7:30 PM
-14,4:45 AM,6:03 AM,12:12 PM,3:19 PM,6:20 PM,7:30 PM
-15,4:45 AM,6:03 AM,12:12 PM,3:19 PM,6:20 PM,7:30 PM
-16,4:44 AM,6:02 AM,12:12 PM,3:19 PM,6:20 PM,7:30 PM
-17,4:44 AM,6:02 AM,12:12 PM,3:20 PM,6:20 PM,7:30 PM
-18,4:43 AM,6:02 AM,12:11 PM,3:20 PM,6:20 PM,7:30 PM
-19,4:43 AM,6:01 AM,12:11 PM,3:21 PM,6:20 PM,7:30 PM
-20,4:42 AM,6:01 AM,12:11 PM,3:21 PM,6:20 PM,7:30 PM
-21,4:42 AM,6:00 AM,12:11 PM,3:22 PM,6:20 PM,7:30 PM
-22,4:41 AM,6:00 AM,12:10 PM,3:22 PM,6:20 PM,7:30 PM
-23,4:41 AM,6:00 AM,12:10 PM,3:22 PM,6:20 PM,7:31 PM
-24,4:40 AM,5:59 AM,12:10 PM,3:23 PM,6:20 PM,7:31 PM
-25,4:40 AM,5:59 AM,12:10 PM,3:23 PM,6:20 PM,7:31 PM
-26,4:39 AM,5:59 AM,12:10 PM,3:24 PM,6:20 PM,7:31 PM
-27,4:39 AM,5:58 AM,12:10 PM,3:24 PM,6:20 PM,7:31 PM
-28,4:38 AM,5:58 AM,12:09 PM,3:24 PM,6:20 PM,7:31 PM
-29,4:38 AM,5:58 AM,12:09 PM,3:25 PM,6:20 PM,7:31 PM
-30,4:37 AM,5:57 AM,12:09 PM,3:25 PM,6:20 PM,7:31 PM`
+        // --- HARDCODED ACJU DATABASE (Source: PDF) ---
+        // Format: "Month-Day": "Fajr,Sunrise,Dhuhr,Asr,Maghrib,Isha"
+        const ACJU_DB = {
+            // FEB
+            "2-15": "5:10 AM,6:28 AM,12:26 PM,3:47 PM,6:23 PM,7:33 PM",
+            "2-16": "5:10 AM,6:28 AM,12:26 PM,3:47 PM,6:23 PM,7:33 PM",
+            "2-17": "5:10 AM,6:28 AM,12:26 PM,3:47 PM,6:23 PM,7:33 PM",
+            "2-18": "5:10 AM,6:28 AM,12:26 PM,3:47 PM,6:24 PM,7:33 PM",
+            "2-19": "5:09 AM,6:27 AM,12:26 PM,3:46 PM,6:24 PM,7:33 PM",
+            "2-20": "5:09 AM,6:27 AM,12:26 PM,3:46 PM,6:24 PM,7:33 PM",
+            "2-21": "5:09 AM,6:27 AM,12:26 PM,3:46 PM,6:24 PM,7:33 PM",
+            "2-22": "5:09 AM,6:27 AM,12:26 PM,3:46 PM,6:24 PM,7:33 PM",
+            "2-23": "5:09 AM,6:26 AM,12:26 PM,3:45 PM,6:24 PM,7:33 PM",
+            "2-24": "5:08 AM,6:26 AM,12:25 PM,3:45 PM,6:24 PM,7:33 PM",
+            "2-25": "5:08 AM,6:25 AM,12:25 PM,3:45 PM,6:24 PM,7:33 PM",
+            "2-26": "5:08 AM,6:25 AM,12:25 PM,3:44 PM,6:24 PM,7:33 PM",
+            "2-27": "5:08 AM,6:25 AM,12:25 PM,3:44 PM,6:24 PM,7:33 PM",
+            "2-28": "5:07 AM,6:25 AM,12:25 PM,3:44 PM,6:24 PM,7:33 PM",
+            // MAR
+            "3-1": "5:07 AM,6:24 AM,12:24 PM,3:43 PM,6:24 PM,7:33 PM",
+            "3-2": "5:06 AM,6:23 AM,12:24 PM,3:42 PM,6:24 PM,7:33 PM",
+            "3-3": "5:06 AM,6:23 AM,12:24 PM,3:42 PM,6:24 PM,7:33 PM",
+            "3-4": "5:06 AM,6:23 AM,12:24 PM,3:41 PM,6:24 PM,7:33 PM",
+            "3-5": "5:05 AM,6:22 AM,12:23 PM,3:41 PM,6:24 PM,7:33 PM",
+            "3-6": "5:05 AM,6:22 AM,12:23 PM,3:40 PM,6:24 PM,7:33 PM",
+            "3-7": "5:05 AM,6:21 AM,12:23 PM,3:40 PM,6:24 PM,7:32 PM",
+            "3-8": "5:04 AM,6:21 AM,12:23 PM,3:39 PM,6:24 PM,7:32 PM",
+            "3-9": "5:04 AM,6:20 AM,12:23 PM,3:39 PM,6:24 PM,7:32 PM",
+            "3-10": "5:03 AM,6:20 AM,12:22 PM,3:38 PM,6:24 PM,7:32 PM",
+            "3-11": "5:03 AM,6:20 AM,12:22 PM,3:37 PM,6:23 PM,7:32 PM",
+            "3-12": "5:02 AM,6:19 AM,12:22 PM,3:37 PM,6:23 PM,7:32 PM",
+            "3-13": "5:02 AM,6:19 AM,12:21 PM,3:36 PM,6:23 PM,7:32 PM",
+            "3-14": "5:02 AM,6:18 AM,12:21 PM,3:36 PM,6:23 PM,7:32 PM",
+            "3-15": "5:01 AM,6:18 AM,12:21 PM,3:35 PM,6:23 PM,7:32 PM",
+            "3-16": "5:01 AM,6:17 AM,12:21 PM,3:34 PM,6:23 PM,7:32 PM",
+            "3-17": "5:00 AM,6:17 AM,12:20 PM,3:34 PM,6:23 PM,7:31 PM",
+            "3-18": "5:00 AM,6:16 AM,12:20 PM,3:33 PM,6:23 PM,7:31 PM",
+            "3-19": "4:59 AM,6:16 AM,12:20 PM,3:32 PM,6:23 PM,7:31 PM",
+            "3-20": "4:59 AM,6:15 AM,12:19 PM,3:31 PM,6:23 PM,7:31 PM",
+            "3-21": "4:58 AM,6:15 AM,12:19 PM,3:31 PM,6:23 PM,7:31 PM",
+            "3-22": "4:58 AM,6:14 AM,12:19 PM,3:30 PM,6:22 PM,7:31 PM",
+            "3-23": "4:57 AM,6:14 AM,12:19 PM,3:29 PM,6:22 PM,7:31 PM",
+            "3-24": "4:57 AM,6:13 AM,12:18 PM,3:28 PM,6:22 PM,7:31 PM",
+            "3-25": "4:56 AM,6:13 AM,12:18 PM,3:28 PM,6:22 PM,7:31 PM",
+            "3-26": "4:56 AM,6:12 AM,12:18 PM,3:27 PM,6:22 PM,7:31 PM",
+            "3-27": "4:55 AM,6:12 AM,12:17 PM,3:26 PM,6:22 PM,7:31 PM",
+            "3-28": "4:55 AM,6:11 AM,12:17 PM,3:25 PM,6:22 PM,7:30 PM",
+            "3-29": "4:54 AM,6:11 AM,12:17 PM,3:24 PM,6:22 PM,7:30 PM",
+            "3-30": "4:53 AM,6:10 AM,12:16 PM,3:23 PM,6:22 PM,7:30 PM",
+            "3-31": "4:53 AM,6:10 AM,12:16 PM,3:22 PM,6:21 PM,7:30 PM",
+            // APR
+            "4-1": "4:52 AM,6:09 AM,12:16 PM,3:21 PM,6:21 PM,7:30 PM",
+            "4-2": "4:52 AM,6:09 AM,12:16 PM,3:20 PM,6:21 PM,7:30 PM",
+            "4-3": "4:51 AM,6:08 AM,12:15 PM,3:20 PM,6:21 PM,7:30 PM",
+            "4-4": "4:51 AM,6:08 AM,12:15 PM,3:19 PM,6:21 PM,7:30 PM",
+            "4-5": "4:50 AM,6:07 AM,12:15 PM,3:18 PM,6:21 PM,7:30 PM",
+            "4-6": "4:50 AM,6:07 AM,12:14 PM,3:17 PM,6:21 PM,7:30 PM",
+            "4-7": "4:49 AM,6:06 AM,12:14 PM,3:16 PM,6:21 PM,7:30 PM",
+            "4-8": "4:48 AM,6:06 AM,12:14 PM,3:15 PM,6:21 PM,7:30 PM",
+            "4-9": "4:48 AM,6:05 AM,12:14 PM,3:16 PM,6:21 PM,7:30 PM",
+            "4-10": "4:47 AM,6:05 AM,12:13 PM,3:16 PM,6:21 PM,7:30 PM",
+            "4-11": "4:47 AM,6:05 AM,12:13 PM,3:17 PM,6:20 PM,7:30 PM",
+            "4-12": "4:46 AM,6:04 AM,12:13 PM,3:18 PM,6:20 PM,7:30 PM",
+            "4-13": "4:46 AM,6:04 AM,12:12 PM,3:18 PM,6:20 PM,7:30 PM",
+            "4-14": "4:45 AM,6:03 AM,12:12 PM,3:19 PM,6:20 PM,7:30 PM",
+            "4-15": "4:45 AM,6:03 AM,12:12 PM,3:19 PM,6:20 PM,7:30 PM"
         };
 
-        // --- STATE ---
         let currentMonthData = {}; 
         let selectedDate = new Date(); 
         let viewDate = new Date(); 
@@ -321,15 +302,15 @@
             fetchData();
         }
 
-        // --- CLOCK LOOP ---
         function updateClock() {
             const now = new Date();
-            // Update Main Digital Clock
+            // 1. Update Main Digital Clock
             if (isSameDate(selectedDate, now)) {
                 document.getElementById('clock-small').innerText = "Now: " + now.toLocaleTimeString('en-US', { hour: 'numeric', minute: '2-digit', hour12: true });
-                // SAFE CALL: Check if data exists before running highlight
+                
+                // SAFE CHECK: Ensure data exists before running highlighter
                 const dayNum = now.getDate();
-                if (currentMonthData && currentMonthData[dayNum]) {
+                if(currentMonthData && currentMonthData[dayNum]) {
                     updateHeroDisplay(now);
                 }
             }
@@ -384,7 +365,6 @@
             });
         }
 
-        // --- FETCH DATA ---
         async function fetchData() {
             showLoader(true);
             const selection = document.getElementById('location-select').value;
@@ -395,35 +375,27 @@
             try {
                 if (selection === 'ACJU') {
                     // --- ACJU MANUAL MODE ---
-                    if (ACJU_RAW[month] && year === 2026) {
-                        const lines = ACJU_RAW[month].split('\n');
-                        lines.forEach(line => {
-                            const cols = line.split(',');
-                            const day = parseInt(cols[0]);
-                            currentMonthData[day] = {
-                                'Fajr': cols[1],
-                                'Sunrise': cols[2],
-                                'Dhuhr': cols[3],
-                                'Asr': cols[4],
-                                'Maghrib': cols[5],
-                                'Isha': cols[6]
+                    // Load data from hardcoded dictionary
+                    // We need to populate currentMonthData for the whole month (1 to 31)
+                    // Loop through days 1-31
+                    for(let i=1; i<=31; i++) {
+                        let key = `${month}-${i}`;
+                        if (ACJU_DB[key]) {
+                            const times = ACJU_DB[key].split(',');
+                            currentMonthData[i] = {
+                                'Fajr': times[0],
+                                'Sunrise': times[1],
+                                'Dhuhr': times[2],
+                                'Asr': times[3],
+                                'Maghrib': times[4],
+                                'Isha': times[5]
                             };
-                        });
-                    } else {
-                        // Fallback if date out of manual range (e.g., 2027)
-                        // Use default Method 1 (Karachi)
-                        const url = `https://api.aladhan.com/v1/calendarByCity/${year}/${month}?city=Colombo&country=Sri%20Lanka&method=1`;
-                        const resp = await fetch(url);
-                        const data = await resp.json();
-                        data.data.forEach(item => {
-                            const dayNum = parseInt(item.date.gregorian.day);
-                            const timings = {};
-                            PRAYER_NAMES.forEach(n => { timings[n] = convertTo12Hour(item.timings[n].split(' ')[0]); });
-                            currentMonthData[dayNum] = timings;
-                        });
+                        }
                     }
+                    // Note: If no data found (e.g. May/June), it will be empty.
+                    // You can add a fallback logic here later if needed.
+                    
                 } else if (selection.startsWith('MY')) {
-                    // --- MALAYSIA (JAKIM) ---
                     const zone = selection.split(',')[1];
                     const url = `https://api.waktusolat.app/v2/solat/${zone}?year=${year}&month=${month}`;
                     const resp = await fetch(url);
@@ -439,7 +411,6 @@
                         currentMonthData[p.day] = timings;
                     });
                 } else {
-                    // --- GLOBAL ---
                     const parts = selection.split(',');
                     const [_, city, country, methodID, lat, lng] = parts;
                     let url = lat ? `https://api.aladhan.com/v1/calendar/${year}/${month}?latitude=${lat}&longitude=${lng}&method=${methodID}`
@@ -469,7 +440,6 @@
             }
         }
 
-        // --- RENDERERS ---
         function renderDailyView(dayNum) {
             const listDiv = document.getElementById('prayer-list');
             listDiv.innerHTML = '';
@@ -478,7 +448,6 @@
             const d = new Date(viewDate.getFullYear(), viewDate.getMonth(), dayNum);
             const now = new Date();
 
-            // Handle Future/Past view vs Today
             if (!isSameDate(d, now)) {
                 document.getElementById('hero-main').innerText = d.toLocaleDateString('en-GB', { day:'numeric', month:'short' });
                 document.getElementById('hero-countdown').innerText = "Future Date";
@@ -488,7 +457,10 @@
                 updateClock(); 
             }
 
-            if (!timings) return;
+            if (!timings) {
+                listDiv.innerHTML = '<div style="text-align:center; padding:20px;">No Data for this date</div>';
+                return;
+            }
 
             PRAYER_NAMES.forEach(name => {
                 const time = timings[name] || '--:--';
@@ -531,12 +503,12 @@
         function updateHeroDisplay(now) {
             const dayNum = now.getDate();
             const timings = currentMonthData[dayNum];
-            if(!timings) return; // FIX: Data must exist
+            if(!timings) return;
 
             const nowMins = now.getHours() * 60 + now.getMinutes();
             let found = false;
             
-            // FIX: Ensure elements exist
+            // ERROR FIX: Check if DOM elements exist (fixes 'classList' error)
             const rows = document.querySelectorAll('.prayer-item');
             if(rows.length === 0) return; 
 
@@ -569,7 +541,7 @@
                     if(row) row.classList.add('active');
                     
                     document.getElementById('hero-main').innerHTML = `${name} ${timings[name]}`;
-                    document.getElementById('hero-countdown').innerHTML = diffStr;
+                    document.getElementById('hero-countdown').innerText = diffStr;
                     document.getElementById('hero-countdown').style.color = "var(--countdown-color)";
                 }
             }
@@ -582,7 +554,6 @@
             }
         }
 
-        // --- HELPERS ---
         function changeLocation() { fetchData(); }
         function toggleView() {
             isCalendarOpen = !isCalendarOpen;
