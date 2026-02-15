@@ -11,8 +11,8 @@
             --bg: #f4f6f8;
             --card-bg: #ffffff;
             --text-light: #7f8c8d;
+            --border: #e1e4e8;
         }
-
         body {
             font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
             background-color: var(--bg);
@@ -22,215 +22,437 @@
             align-items: center;
             min-height: 100vh;
             color: var(--primary);
+            padding-bottom: 40px;
         }
 
+        /* --- Header --- */
         header {
             width: 100%;
             background: var(--card-bg);
-            padding: 20px 0;
+            padding: 15px 0;
             box-shadow: 0 2px 10px rgba(0,0,0,0.05);
             text-align: center;
             position: sticky;
             top: 0;
-            z-index: 10;
+            z-index: 20;
         }
-
-        h1 { margin: 0; font-size: 1.2rem; font-weight: 600; color: var(--primary); }
-        
-        /* City Selector */
         select {
-            margin-top: 10px;
-            padding: 8px 12px;
-            font-size: 1rem;
-            border-radius: 8px;
-            border: 1px solid #ddd;
-            background: #f9f9f9;
-            width: 90%;
-            max-width: 320px;
-            text-align: center;
-            outline: none;
+            margin-top: 10px; padding: 8px 12px; font-size: 1rem;
+            border-radius: 8px; border: 1px solid #ddd; background: #f9f9f9;
+            width: 90%; max-width: 320px; text-align: center; outline: none;
         }
 
-        /* Clock Area */
-        .clock-container {
-            margin: 30px 0 20px 0;
-            text-align: center;
+        /* --- Main Display (Daily View) --- */
+        .daily-view {
+            width: 100%;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            transition: opacity 0.3s;
         }
+        .clock-container { margin: 20px 0 10px 0; text-align: center; }
         .time-display { font-size: 3.5rem; font-weight: 700; color: var(--primary); letter-spacing: -1px; }
         .date-display { font-size: 1rem; color: var(--text-light); margin-top: 5px; }
-
-        /* Prayer List Card */
-        .prayer-list {
-            width: 90%;
-            max-width: 400px;
-            background: var(--card-bg);
-            border-radius: 20px;
-            padding: 10px;
-            box-shadow: 0 4px 15px rgba(0,0,0,0.05);
-            margin-bottom: 30px;
+        
+        .next-prayer-info {
+            background: var(--accent); color: white; padding: 8px 20px;
+            border-radius: 20px; font-size: 0.9rem; margin: 15px 0 25px 0;
+            box-shadow: 0 4px 10px rgba(39, 174, 96, 0.3); display: inline-block;
+            min-width: 150px; /* Prevents jumping */
         }
 
+        .prayer-list {
+            width: 90%; max-width: 400px; background: var(--card-bg);
+            border-radius: 20px; padding: 10px;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.05);
+        }
         .prayer-item {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            padding: 15px 20px;
-            border-bottom: 1px solid #eee;
-            transition: background 0.3s;
+            display: flex; justify-content: space-between; align-items: center;
+            padding: 15px 20px; border-bottom: 1px solid #eee;
         }
         .prayer-item:last-child { border-bottom: none; }
-
         .prayer-name { font-size: 1.1rem; font-weight: 500; }
         .prayer-time { font-size: 1.2rem; font-weight: 700; color: var(--primary); }
+        .prayer-item.active { background-color: #e8f5e9; border-radius: 12px; border-bottom: none; }
+        .prayer-item.active .prayer-name, .prayer-item.active .prayer-time { color: var(--accent); }
 
-        /* Active Prayer Highlight */
-        .prayer-item.active {
-            background-color: #e8f5e9;
-            border-radius: 12px;
-            border-bottom: none;
+        /* --- Toggle Button --- */
+        .view-toggle-btn {
+            background: #fff; border: 1px solid var(--accent); color: var(--accent);
+            padding: 8px 20px; border-radius: 20px; font-weight: 600; margin-top: 20px;
+            cursor: pointer; display: flex; align-items: center; gap: 8px;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.05);
         }
-        .prayer-item.active .prayer-name, 
-        .prayer-item.active .prayer-time {
-            color: var(--accent);
-        }
-        .prayer-item.active::after {
-            content: '●';
-            color: var(--accent);
-            font-size: 0.8rem;
-            margin-left: 10px;
-        }
+        .view-toggle-btn:active { transform: scale(0.96); background: #f0fdf4; }
 
-        .next-prayer-info {
-            background: var(--accent);
-            color: white;
-            padding: 8px 20px;
-            border-radius: 20px;
-            font-size: 0.9rem;
-            margin-bottom: 20px;
-            box-shadow: 0 4px 10px rgba(39, 174, 96, 0.3);
+        /* --- Calendar View --- */
+        .calendar-view {
+            display: none; /* Hidden by default */
+            width: 95%; max-width: 400px;
+            background: white; border-radius: 20px;
+            padding: 15px; margin-top: 20px;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.05);
         }
+        .cal-header {
+            display: flex; justify-content: space-between; align-items: center;
+            margin-bottom: 15px; padding: 0 10px;
+        }
+        .cal-title { font-weight: 700; font-size: 1.1rem; }
+        .cal-btn {
+            background: #eee; border: none; width: 32px; height: 32px;
+            border-radius: 50%; cursor: pointer; font-weight: bold;
+        }
+        .cal-grid {
+            display: grid; grid-template-columns: repeat(7, 1fr); gap: 5px; text-align: center;
+        }
+        .cal-day-name {
+            font-size: 0.8rem; font-weight: 600; color: #aaa; margin-bottom: 10px;
+        }
+        .cal-cell {
+            aspect-ratio: 1; display: flex; align-items: center; justify-content: center;
+            border-radius: 10px; font-size: 0.95rem; cursor: pointer;
+            transition: background 0.1s; border: 1px solid transparent;
+        }
+        .cal-cell.today { background-color: #e8f5e9; color: var(--accent); font-weight: 700; border: 1px solid var(--accent); }
+        .cal-cell.selected { background-color: var(--primary); color: white; }
+        .cal-cell.empty { background: transparent; cursor: default; }
 
+        /* --- Loading Overlay --- */
+        .loader {
+            position: fixed; top: 50%; left: 50%; transform: translate(-50%, -50%);
+            background: rgba(0,0,0,0.7); color: white; padding: 20px;
+            border-radius: 10px; display: none; z-index: 100;
+        }
     </style>
 </head>
 <body>
 
     <header>
-        <h1>📍 Prayer Times</h1>
-        <select id="location-select" onchange="fetchPrayerTimes()">
-            <option value="Kuala Lumpur,Malaysia,11">🇲🇾 Kuala Lumpur (JAKIM/MUIS)</option>
-            <option value="Colombo,Sri Lanka,11">🇱🇰 Colombo, Sri Lanka</option>
-            <option value="Palma,Spain,3">🇪🇸 Mallorca, Spain (MWL)</option>
-            <option value="London,United Kingdom,3">🇬🇧 Essex/London (MWL)</option>
+        <div style="font-weight:700; font-size:1.1rem">📍 Prayer Times</div>
+        <select id="location-select" onchange="changeLocation()">
+            <option value="MY,WLY01">🇲🇾 Kuala Lumpur (JAKIM)</option>
+            <option value="GLOBAL,Colombo,Sri Lanka,1">🇱🇰 Colombo</option>
+            <option value="GLOBAL,Palma,Spain,3">🇪🇸 Mallorca</option>
+            <option value="GLOBAL,London,United Kingdom,3">🇬🇧 Essex/London</option>
         </select>
     </header>
 
-    <div class="clock-container">
-        <div class="time-display" id="clock">00:00</div>
-        <div class="date-display" id="date">Loading...</div>
-        <div class="next-prayer-info" id="next-prayer">Loading...</div>
+    <button class="view-toggle-btn" onclick="toggleView()">
+        <span id="btn-icon">📅</span> <span id="btn-text">Month View</span>
+    </button>
+
+    <div id="daily-view" class="daily-view">
+        <div class="clock-container">
+            <div class="time-display" id="clock">00:00</div>
+            <div class="date-display" id="date-display">Loading...</div>
+            <div class="next-prayer-info" id="next-prayer">Loading...</div>
+        </div>
+
+        <div class="prayer-list" id="prayer-list">
+            </div>
     </div>
 
-    <div class="prayer-list" id="prayer-list">
-        <div style="text-align:center; padding:20px; color:#888;">Fetching times...</div>
+    <div id="calendar-view" class="calendar-view">
+        <div class="cal-header">
+            <button class="cal-btn" onclick="changeMonth(-1)">‹</button>
+            <div class="cal-title" id="cal-month-year">...</div>
+            <button class="cal-btn" onclick="changeMonth(1)">›</button>
+        </div>
+        <div class="cal-grid" id="cal-grid">
+            </div>
+        <div style="text-align:center; font-size:0.85rem; color:#888; margin-top:15px;">
+            Tap a date to see times
+        </div>
     </div>
+
+    <div id="loader" class="loader">Fetching Month Data...</div>
 
     <script>
-        const API_URL = "https://api.aladhan.com/v1/timingsByCity";
+        // --- CONFIG ---
         const PRAYER_NAMES = ['Fajr', 'Sunrise', 'Dhuhr', 'Asr', 'Maghrib', 'Isha'];
-        let timings = {};
+        const MY_MAP = { 'fajr': 'Fajr', 'syuruk': 'Sunrise', 'dhuhr': 'Dhuhr', 'asr': 'Asr', 'maghrib': 'Maghrib', 'isha': 'Isha' };
+        
+        // --- STATE ---
+        let currentMonthData = {}; 
+        let selectedDate = new Date(); 
+        let viewDate = new Date(); 
+        let isCalendarOpen = false;
 
-        // 1. Clock
+        // --- INIT ---
+        function init() {
+            // Start Clock
+            setInterval(updateClock, 1000);
+            updateClock();
+            
+            // Initial Fetch
+            fetchData();
+        }
+
+        // --- CLOCK & DATE ---
         function updateClock() {
             const now = new Date();
-            const timeString = now.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
-            document.getElementById('clock').innerText = timeString;
-            
-            const dateString = now.toLocaleDateString('en-GB', { weekday: 'long', day: 'numeric', month: 'long', year: 'numeric' });
-            document.getElementById('date').innerText = dateString;
-
-            highlightNextPrayer();
+            // Only update the big clock if we are looking at TODAY
+            if (isSameDate(selectedDate, now)) {
+                document.getElementById('clock').innerText = now.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+                // SAFELY Highlight
+                highlightNextPrayer(now);
+            }
         }
-        setInterval(updateClock, 1000);
 
-        // 2. Fetch Data
-        async function fetchPrayerTimes() {
-            const listDiv = document.getElementById('prayer-list');
-            listDiv.innerHTML = '<div style="text-align:center; padding:20px;">Updating...</div>';
-            
-            // Get City, Country, AND Method from the dropdown value
+        // --- DATA FETCHER (MONTHLY) ---
+        async function fetchData() {
+            showLoader(true);
             const selection = document.getElementById('location-select').value;
-            const [city, country, methodID] = selection.split(',');
+            const parts = selection.split(',');
+            const type = parts[0];
+            
+            const year = viewDate.getFullYear();
+            const month = viewDate.getMonth() + 1; // 1-12
+
+            currentMonthData = {}; // Reset
 
             try {
-                // We now pass the specific method ID for the selected city
-                const url = `${API_URL}?city=${city}&country=${country}&method=${methodID}`;
-                
-                const response = await fetch(url);
-                const data = await response.json();
-                
-                if (data.code === 200) {
-                    timings = data.data.timings;
-                    renderPrayers();
-                    highlightNextPrayer();
+                if (type === 'MY') {
+                    // JAKIM API
+                    const zone = parts[1];
+                    const url = `https://api.waktusolat.app/v2/solat/${zone}?year=${year}&month=${month}`;
+                    const resp = await fetch(url);
+                    const data = await resp.json();
+
+                    data.prayers.forEach(p => {
+                        const timings = {};
+                        for (let k in MY_MAP) {
+                            if (p[k]) {
+                                const d = new Date(p[k] * 1000);
+                                timings[MY_MAP[k]] = formatTime(d);
+                            }
+                        }
+                        currentMonthData[p.day] = timings;
+                    });
+
                 } else {
-                    listDiv.innerHTML = 'Error fetching data.';
+                    // ALADHAN API
+                    const [_, city, country, methodID] = parts;
+                    const url = `https://api.aladhan.com/v1/calendarByCity/${year}/${month}?city=${city}&country=${country}&method=${methodID}`;
+                    const resp = await fetch(url);
+                    const data = await resp.json();
+
+                    data.data.forEach(item => {
+                        const dayNum = parseInt(item.date.gregorian.day);
+                        const timings = {};
+                        PRAYER_NAMES.forEach(n => {
+                            timings[n] = convertTo12Hour(item.timings[n].split(' ')[0]);
+                        });
+                        currentMonthData[dayNum] = timings;
+                    });
                 }
-            } catch (error) {
-                console.error(error);
-                listDiv.innerHTML = 'Network Error.';
+
+                renderCalendar();
+                // If selected date is in view, render it. Else render 1st of month.
+                if (selectedDate.getMonth() === viewDate.getMonth() && selectedDate.getFullYear() === viewDate.getFullYear()) {
+                    renderDailyView(selectedDate.getDate());
+                } else {
+                    renderDailyView(1); 
+                }
+
+            } catch (e) {
+                console.error(e);
+                document.getElementById('prayer-list').innerHTML = '<div style="text-align:center; padding:20px; color:red;">Connection Failed. Retrying...</div>';
+            } finally {
+                showLoader(false);
             }
         }
 
-        // 3. Render List
-        function renderPrayers() {
+        // --- RENDER DAILY LIST ---
+        function renderDailyView(dayNum) {
             const listDiv = document.getElementById('prayer-list');
+            const dateDisplay = document.getElementById('date-display');
+            
             listDiv.innerHTML = '';
+            
+            const timings = currentMonthData[dayNum];
+            
+            // Format Display Date
+            const d = new Date(viewDate.getFullYear(), viewDate.getMonth(), dayNum);
+            dateDisplay.innerText = d.toLocaleDateString('en-GB', { weekday: 'long', day: 'numeric', month: 'long', year: 'numeric' });
+            
+            const now = new Date();
+            if (!isSameDate(d, now)) {
+                document.getElementById('clock').innerText = "--:--";
+                document.getElementById('next-prayer').innerText = "Viewing Future Date";
+                document.getElementById('next-prayer').style.background = "#95a5a6"; 
+            } else {
+                updateClock(); 
+                document.getElementById('next-prayer').style.background = "var(--accent)";
+            }
+
+            if (!timings) {
+                listDiv.innerHTML = '<div style="text-align:center; padding:20px;">No Data</div>';
+                return;
+            }
 
             PRAYER_NAMES.forEach(name => {
-                const time = convertTo12Hour(timings[name]);
-                const item = document.createElement('div');
-                item.className = 'prayer-item';
-                item.id = `row-${name}`;
-                item.innerHTML = `<span class="prayer-name">${name}</span><span class="prayer-time">${time}</span>`;
-                listDiv.appendChild(item);
+                const time = timings[name] || '--:--';
+                const row = document.createElement('div');
+                row.className = 'prayer-item';
+                row.id = `row-${name}`;
+                row.innerHTML = `<span class="prayer-name">${name}</span><span class="prayer-time">${time}</span>`;
+                listDiv.appendChild(row);
             });
+            
+            // Trigger highlight immediately after rendering if it's today
+            if (isSameDate(d, now)) highlightNextPrayer(now);
         }
 
-        // 4. Highlight Logic
-        function highlightNextPrayer() {
-            if (Object.keys(timings).length === 0) return;
-            const now = new Date();
-            const currentTime = now.getHours() * 60 + now.getMinutes();
-            let foundNext = false;
+        // --- RENDER CALENDAR ---
+        function renderCalendar() {
+            const grid = document.getElementById('cal-grid');
+            const title = document.getElementById('cal-month-year');
+            grid.innerHTML = '';
+            
+            title.innerText = viewDate.toLocaleDateString('en-US', { month: 'long', year: 'numeric' });
 
-            document.querySelectorAll('.prayer-item').forEach(el => el.classList.remove('active'));
+            const year = viewDate.getFullYear();
+            const month = viewDate.getMonth(); 
+            const firstDay = new Date(year, month, 1).getDay(); 
+            const daysInMonth = new Date(year, month + 1, 0).getDate();
 
-            for (let name of PRAYER_NAMES) {
-                const [h, m] = timings[name].split(':').map(Number);
-                const prayerMinutes = h * 60 + m;
+            ['S','M','T','W','T','F','S'].forEach(d => {
+                grid.innerHTML += `<div class="cal-day-name">${d}</div>`;
+            });
 
-                if (prayerMinutes > currentTime && !foundNext) {
-                    foundNext = true;
-                    document.getElementById(`row-${name}`).classList.add('active');
-                    document.getElementById('next-prayer').innerText = `Next: ${name} at ${convertTo12Hour(timings[name])}`;
+            for (let i = 0; i < firstDay; i++) {
+                grid.innerHTML += `<div class="cal-cell empty"></div>`;
+            }
+
+            const today = new Date();
+            for (let i = 1; i <= daysInMonth; i++) {
+                const cell = document.createElement('div');
+                cell.className = 'cal-cell';
+                cell.innerText = i;
+                
+                if (i === today.getDate() && month === today.getMonth() && year === today.getFullYear()) {
+                    cell.classList.add('today');
                 }
+                
+                if (i === selectedDate.getDate() && month === selectedDate.getMonth() && year === selectedDate.getFullYear()) {
+                    cell.classList.add('selected');
+                }
+
+                cell.onclick = () => {
+                    selectedDate = new Date(year, month, i);
+                    toggleView(); 
+                    renderDailyView(i);
+                    renderCalendar(); 
+                };
+
+                grid.appendChild(cell);
             }
-            if (!foundNext) {
-                document.getElementById('next-prayer').innerText = `Next: Fajr (Tomorrow)`;
-                // Highlight Fajr if desired
+        }
+
+        // --- ACTIONS ---
+        function changeLocation() {
+            fetchData();
+        }
+
+        function toggleView() {
+            const daily = document.getElementById('daily-view');
+            const cal = document.getElementById('calendar-view');
+            const btnText = document.getElementById('btn-text');
+            const btnIcon = document.getElementById('btn-icon');
+
+            isCalendarOpen = !isCalendarOpen;
+
+            if (isCalendarOpen) {
+                daily.style.display = 'none';
+                cal.style.display = 'block';
+                btnText.innerText = "Back to Today";
+                btnIcon.innerText = "⌚";
+            } else {
+                daily.style.display = 'flex';
+                cal.style.display = 'none';
+                btnText.innerText = "Month View";
+                btnIcon.innerText = "📅";
+                renderDailyView(selectedDate.getDate());
             }
+        }
+
+        function changeMonth(delta) {
+            viewDate.setMonth(viewDate.getMonth() + delta);
+            fetchData(); 
+        }
+
+        // --- HELPERS ---
+        function formatTime(dateObj) {
+            let h = dateObj.getHours();
+            let m = dateObj.getMinutes();
+            let suffix = h >= 12 ? "PM" : "AM";
+            h = h % 12 || 12;
+            return `${h}:${String(m).padStart(2,'0')} ${suffix}`;
         }
 
         function convertTo12Hour(time24) {
-            if (!time24) return "";
             let [h, m] = time24.split(':');
             let suffix = h >= 12 ? "PM" : "AM";
             h = h % 12 || 12;
             return `${h}:${m} ${suffix}`;
         }
 
-        fetchPrayerTimes();
-        updateClock();
+        function isSameDate(d1, d2) {
+            return d1.getDate() === d2.getDate() && 
+                   d1.getMonth() === d2.getMonth() && 
+                   d1.getFullYear() === d2.getFullYear();
+        }
+
+        // --- SAFETY CHECKED HIGHLIGHTER ---
+        function highlightNextPrayer(now) {
+            const dayNum = now.getDate();
+            const timings = currentMonthData[dayNum];
+            
+            // Safety Check 1: Do we have data?
+            if(!timings) return;
+
+            const nowMins = now.getHours() * 60 + now.getMinutes();
+            let found = false;
+
+            // Safety Check 2: Ensure elements exist before removing classes
+            const rows = document.querySelectorAll('.prayer-item');
+            if (rows.length === 0) return; // List not built yet
+            rows.forEach(e => e.classList.remove('active'));
+
+            for(let name of PRAYER_NAMES) {
+                if (!timings[name]) continue;
+                const [time, period] = timings[name].split(' ');
+                let [h, m] = time.split(':').map(Number);
+                if (period === 'PM' && h !== 12) h += 12;
+                if (period === 'AM' && h === 12) h = 0;
+                
+                const pMins = h*60 + m;
+                if (pMins > nowMins && !found) {
+                    found = true;
+                    // Safety Check 3: Ensure the specific row exists
+                    const row = document.getElementById(`row-${name}`);
+                    if (row) row.classList.add('active');
+                    
+                    const nextEl = document.getElementById('next-prayer');
+                    if(nextEl) nextEl.innerText = `Next: ${name} at ${timings[name]}`;
+                }
+            }
+            if(!found) {
+                 const nextEl = document.getElementById('next-prayer');
+                 if(nextEl) nextEl.innerText = "Next: Fajr (Tomorrow)";
+                 const row = document.getElementById('row-Fajr');
+                 if(row) row.classList.add('active');
+            }
+        }
+
+        function showLoader(show) {
+            const l = document.getElementById('loader');
+            if(l) l.style.display = show ? 'block' : 'none';
+        }
+
+        // Start
+        init();
     </script>
 </body>
 </html>
