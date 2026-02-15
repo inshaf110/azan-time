@@ -29,7 +29,7 @@
         header {
             width: 100%;
             background: var(--card-bg);
-            padding: 15px 0;
+            padding: 15px 0 10px 0;
             box-shadow: 0 2px 10px rgba(0,0,0,0.05);
             text-align: center;
             position: sticky;
@@ -37,18 +37,36 @@
             z-index: 20;
         }
         select {
-            margin-top: 10px; padding: 8px 12px; font-size: 1rem;
+            margin-top: 5px; padding: 8px 12px; font-size: 1rem;
             border-radius: 8px; border: 1px solid #ddd; background: #f9f9f9;
             width: 90%; max-width: 320px; text-align: center; outline: none;
         }
 
-        /* --- Main Display (Daily View) --- */
+        /* --- World Clocks --- */
+        #world-clocks {
+            display: flex; justify-content: center; gap: 8px;
+            margin-top: 15px; flex-wrap: wrap; width: 95%; max-width: 400px;
+        }
+        .mini-clock {
+            background: #f1f3f5; border-radius: 8px; padding: 5px 10px;
+            text-align: center; border: 1px solid #e9ecef;
+            min-width: 70px; flex: 1;
+        }
+        .mini-clock-label { font-size: 0.65rem; color: #888; font-weight: 600; text-transform: uppercase; margin-bottom: 2px;}
+        .mini-clock-time { font-size: 0.85rem; font-weight: 700; color: #555; }
+
+        /* --- View Toggle --- */
+        .view-toggle-btn {
+            background: #fff; border: 1px solid var(--accent); color: var(--accent);
+            padding: 8px 20px; border-radius: 20px; font-weight: 600; margin-top: 20px;
+            cursor: pointer; display: flex; align-items: center; gap: 8px;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.05); font-size: 0.9rem;
+        }
+        .view-toggle-btn:active { transform: scale(0.96); background: #f0fdf4; }
+
+        /* --- Main Display --- */
         .daily-view {
-            width: 100%;
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            transition: opacity 0.3s;
+            width: 100%; display: flex; flex-direction: column; align-items: center;
         }
         .clock-container { margin: 20px 0 10px 0; text-align: center; }
         .time-display { font-size: 3.5rem; font-weight: 700; color: var(--primary); letter-spacing: -1px; }
@@ -58,7 +76,13 @@
             background: var(--accent); color: white; padding: 8px 20px;
             border-radius: 20px; font-size: 0.9rem; margin: 15px 0 25px 0;
             box-shadow: 0 4px 10px rgba(39, 174, 96, 0.3); display: inline-block;
-            min-width: 150px; /* Prevents jumping */
+            min-width: 160px; font-weight: 500;
+        }
+        /* Style for the red countdown text */
+        .countdown-red {
+            color: #D32F2F; /* Bold Dark Red */
+            font-weight: 800;
+            margin-left: 5px;
         }
 
         .prayer-list {
@@ -76,19 +100,9 @@
         .prayer-item.active { background-color: #e8f5e9; border-radius: 12px; border-bottom: none; }
         .prayer-item.active .prayer-name, .prayer-item.active .prayer-time { color: var(--accent); }
 
-        /* --- Toggle Button --- */
-        .view-toggle-btn {
-            background: #fff; border: 1px solid var(--accent); color: var(--accent);
-            padding: 8px 20px; border-radius: 20px; font-weight: 600; margin-top: 20px;
-            cursor: pointer; display: flex; align-items: center; gap: 8px;
-            box-shadow: 0 2px 5px rgba(0,0,0,0.05);
-        }
-        .view-toggle-btn:active { transform: scale(0.96); background: #f0fdf4; }
-
         /* --- Calendar View --- */
         .calendar-view {
-            display: none; /* Hidden by default */
-            width: 95%; max-width: 400px;
+            display: none; width: 95%; max-width: 400px;
             background: white; border-radius: 20px;
             padding: 15px; margin-top: 20px;
             box-shadow: 0 4px 15px rgba(0,0,0,0.05);
@@ -105,9 +119,7 @@
         .cal-grid {
             display: grid; grid-template-columns: repeat(7, 1fr); gap: 5px; text-align: center;
         }
-        .cal-day-name {
-            font-size: 0.8rem; font-weight: 600; color: #aaa; margin-bottom: 10px;
-        }
+        .cal-day-name { font-size: 0.8rem; font-weight: 600; color: #aaa; margin-bottom: 10px; }
         .cal-cell {
             aspect-ratio: 1; display: flex; align-items: center; justify-content: center;
             border-radius: 10px; font-size: 0.95rem; cursor: pointer;
@@ -117,7 +129,7 @@
         .cal-cell.selected { background-color: var(--primary); color: white; }
         .cal-cell.empty { background: transparent; cursor: default; }
 
-        /* --- Loading Overlay --- */
+        /* --- Loader --- */
         .loader {
             position: fixed; top: 50%; left: 50%; transform: translate(-50%, -50%);
             background: rgba(0,0,0,0.7); color: white; padding: 20px;
@@ -131,10 +143,11 @@
         <div style="font-weight:700; font-size:1.1rem">📍 Prayer Times</div>
         <select id="location-select" onchange="changeLocation()">
             <option value="MY,WLY01">🇲🇾 Kuala Lumpur (JAKIM)</option>
-            <option value="GLOBAL,Colombo,Sri Lanka,1">🇱🇰 Colombo</option>
+            <option value="GLOBAL,Colombo,Sri Lanka,1">🇱🇰 Colombo (ACJU/Karachi)</option>
             <option value="GLOBAL,Palma,Spain,3">🇪🇸 Mallorca</option>
             <option value="GLOBAL,London,United Kingdom,3">🇬🇧 Essex/London</option>
         </select>
+        <div id="world-clocks"></div>
     </header>
 
     <button class="view-toggle-btn" onclick="toggleView()">
@@ -148,8 +161,7 @@
             <div class="next-prayer-info" id="next-prayer">Loading...</div>
         </div>
 
-        <div class="prayer-list" id="prayer-list">
-            </div>
+        <div class="prayer-list" id="prayer-list"></div>
     </div>
 
     <div id="calendar-view" class="calendar-view">
@@ -158,67 +170,106 @@
             <div class="cal-title" id="cal-month-year">...</div>
             <button class="cal-btn" onclick="changeMonth(1)">›</button>
         </div>
-        <div class="cal-grid" id="cal-grid">
-            </div>
-        <div style="text-align:center; font-size:0.85rem; color:#888; margin-top:15px;">
-            Tap a date to see times
-        </div>
+        <div class="cal-grid" id="cal-grid"></div>
+        <div style="text-align:center; font-size:0.85rem; color:#888; margin-top:15px;">Tap date for times</div>
     </div>
 
-    <div id="loader" class="loader">Fetching Month Data...</div>
+    <div id="loader" class="loader">Fetching Data...</div>
 
     <script>
         // --- CONFIG ---
         const PRAYER_NAMES = ['Fajr', 'Sunrise', 'Dhuhr', 'Asr', 'Maghrib', 'Isha'];
         const MY_MAP = { 'fajr': 'Fajr', 'syuruk': 'Sunrise', 'dhuhr': 'Dhuhr', 'asr': 'Asr', 'maghrib': 'Maghrib', 'isha': 'Isha' };
         
+        // Timezone Data for World Clocks
+        const LOC_INFO = {
+            "MY,WLY01": { name: "KL", tz: "Asia/Kuala_Lumpur" },
+            "GLOBAL,Colombo,Sri Lanka,1": { name: "Colombo", tz: "Asia/Colombo" },
+            "GLOBAL,Palma,Spain,3": { name: "Mallorca", tz: "Europe/Madrid" },
+            "GLOBAL,London,United Kingdom,3": { name: "London", tz: "Europe/London" }
+        };
+
         // --- STATE ---
         let currentMonthData = {}; 
         let selectedDate = new Date(); 
         let viewDate = new Date(); 
         let isCalendarOpen = false;
 
-        // --- INIT ---
         function init() {
-            // Start Clock
             setInterval(updateClock, 1000);
             updateClock();
-            
-            // Initial Fetch
             fetchData();
         }
 
-        // --- CLOCK & DATE ---
+        // --- CLOCK LOOP ---
         function updateClock() {
             const now = new Date();
-            // Only update the big clock if we are looking at TODAY
+
+            // 1. Update Main Clock (Only if viewing today)
             if (isSameDate(selectedDate, now)) {
                 document.getElementById('clock').innerText = now.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
-                // SAFELY Highlight
                 highlightNextPrayer(now);
             }
+
+            // 2. Update World Clocks
+            updateWorldClocks(now);
         }
 
-        // --- DATA FETCHER (MONTHLY) ---
+        function updateWorldClocks(now) {
+            const currentVal = document.getElementById('location-select').value;
+            const container = document.getElementById('world-clocks');
+            
+            if (container.children.length === 0) {
+                // Initial Build
+                Object.keys(LOC_INFO).forEach(key => {
+                    const div = document.createElement('div');
+                    div.className = 'mini-clock';
+                    div.dataset.key = key; 
+                    div.innerHTML = `
+                        <div class="mini-clock-label">${LOC_INFO[key].name}</div>
+                        <div class="mini-clock-time">--:--</div>
+                    `;
+                    container.appendChild(div);
+                });
+            }
+
+            // Update Times & Visibility
+            Array.from(container.children).forEach(div => {
+                const key = div.dataset.key;
+                if (key === currentVal) {
+                    div.style.display = 'none'; // Hide current location
+                } else {
+                    div.style.display = 'block';
+                    const timeStr = now.toLocaleTimeString('en-US', { 
+                        timeZone: LOC_INFO[key].tz, 
+                        hour: 'numeric', 
+                        minute: '2-digit',
+                        hour12: true 
+                    });
+                    div.querySelector('.mini-clock-time').innerText = timeStr;
+                }
+            });
+        }
+
+        // --- FETCH DATA ---
         async function fetchData() {
             showLoader(true);
+            
             const selection = document.getElementById('location-select').value;
             const parts = selection.split(',');
             const type = parts[0];
-            
             const year = viewDate.getFullYear();
-            const month = viewDate.getMonth() + 1; // 1-12
+            const month = viewDate.getMonth() + 1;
 
-            currentMonthData = {}; // Reset
+            currentMonthData = {}; 
 
             try {
                 if (type === 'MY') {
-                    // JAKIM API
+                    // MALAYSIA API
                     const zone = parts[1];
                     const url = `https://api.waktusolat.app/v2/solat/${zone}?year=${year}&month=${month}`;
                     const resp = await fetch(url);
                     const data = await resp.json();
-
                     data.prayers.forEach(p => {
                         const timings = {};
                         for (let k in MY_MAP) {
@@ -229,14 +280,12 @@
                         }
                         currentMonthData[p.day] = timings;
                     });
-
                 } else {
-                    // ALADHAN API
+                    // GLOBAL API
                     const [_, city, country, methodID] = parts;
                     const url = `https://api.aladhan.com/v1/calendarByCity/${year}/${month}?city=${city}&country=${country}&method=${methodID}`;
                     const resp = await fetch(url);
                     const data = await resp.json();
-
                     data.data.forEach(item => {
                         const dayNum = parseInt(item.date.gregorian.day);
                         const timings = {};
@@ -248,8 +297,7 @@
                 }
 
                 renderCalendar();
-                // If selected date is in view, render it. Else render 1st of month.
-                if (selectedDate.getMonth() === viewDate.getMonth() && selectedDate.getFullYear() === viewDate.getFullYear()) {
+                if (selectedDate.getMonth() === viewDate.getMonth()) {
                     renderDailyView(selectedDate.getDate());
                 } else {
                     renderDailyView(1); 
@@ -257,22 +305,19 @@
 
             } catch (e) {
                 console.error(e);
-                document.getElementById('prayer-list').innerHTML = '<div style="text-align:center; padding:20px; color:red;">Connection Failed. Retrying...</div>';
+                alert("Connection Error. Please retry.");
             } finally {
                 showLoader(false);
             }
         }
 
-        // --- RENDER DAILY LIST ---
+        // --- RENDERERS ---
         function renderDailyView(dayNum) {
             const listDiv = document.getElementById('prayer-list');
             const dateDisplay = document.getElementById('date-display');
-            
             listDiv.innerHTML = '';
             
             const timings = currentMonthData[dayNum];
-            
-            // Format Display Date
             const d = new Date(viewDate.getFullYear(), viewDate.getMonth(), dayNum);
             dateDisplay.innerText = d.toLocaleDateString('en-GB', { weekday: 'long', day: 'numeric', month: 'long', year: 'numeric' });
             
@@ -286,10 +331,7 @@
                 document.getElementById('next-prayer').style.background = "var(--accent)";
             }
 
-            if (!timings) {
-                listDiv.innerHTML = '<div style="text-align:center; padding:20px;">No Data</div>';
-                return;
-            }
+            if (!timings) return;
 
             PRAYER_NAMES.forEach(name => {
                 const time = timings[name] || '--:--';
@@ -299,125 +341,48 @@
                 row.innerHTML = `<span class="prayer-name">${name}</span><span class="prayer-time">${time}</span>`;
                 listDiv.appendChild(row);
             });
-            
-            // Trigger highlight immediately after rendering if it's today
             if (isSameDate(d, now)) highlightNextPrayer(now);
         }
 
-        // --- RENDER CALENDAR ---
         function renderCalendar() {
             const grid = document.getElementById('cal-grid');
-            const title = document.getElementById('cal-month-year');
+            document.getElementById('cal-month-year').innerText = viewDate.toLocaleDateString('en-US', { month: 'long', year: 'numeric' });
             grid.innerHTML = '';
-            
-            title.innerText = viewDate.toLocaleDateString('en-US', { month: 'long', year: 'numeric' });
-
             const year = viewDate.getFullYear();
-            const month = viewDate.getMonth(); 
-            const firstDay = new Date(year, month, 1).getDay(); 
+            const month = viewDate.getMonth();
+            const firstDay = new Date(year, month, 1).getDay();
             const daysInMonth = new Date(year, month + 1, 0).getDate();
-
-            ['S','M','T','W','T','F','S'].forEach(d => {
-                grid.innerHTML += `<div class="cal-day-name">${d}</div>`;
-            });
-
-            for (let i = 0; i < firstDay; i++) {
-                grid.innerHTML += `<div class="cal-cell empty"></div>`;
-            }
-
+            ['S','M','T','W','T','F','S'].forEach(d => grid.innerHTML += `<div class="cal-day-name">${d}</div>`);
+            for (let i = 0; i < firstDay; i++) grid.innerHTML += `<div class="cal-cell empty"></div>`;
             const today = new Date();
             for (let i = 1; i <= daysInMonth; i++) {
                 const cell = document.createElement('div');
                 cell.className = 'cal-cell';
                 cell.innerText = i;
-                
-                if (i === today.getDate() && month === today.getMonth() && year === today.getFullYear()) {
-                    cell.classList.add('today');
-                }
-                
-                if (i === selectedDate.getDate() && month === selectedDate.getMonth() && year === selectedDate.getFullYear()) {
-                    cell.classList.add('selected');
-                }
-
+                if (i === today.getDate() && month === today.getMonth() && year === today.getFullYear()) cell.classList.add('today');
+                if (i === selectedDate.getDate() && month === selectedDate.getMonth() && year === selectedDate.getFullYear()) cell.classList.add('selected');
                 cell.onclick = () => {
                     selectedDate = new Date(year, month, i);
-                    toggleView(); 
+                    toggleView();
                     renderDailyView(i);
                     renderCalendar(); 
                 };
-
                 grid.appendChild(cell);
             }
         }
 
-        // --- ACTIONS ---
-        function changeLocation() {
-            fetchData();
-        }
-
-        function toggleView() {
-            const daily = document.getElementById('daily-view');
-            const cal = document.getElementById('calendar-view');
-            const btnText = document.getElementById('btn-text');
-            const btnIcon = document.getElementById('btn-icon');
-
-            isCalendarOpen = !isCalendarOpen;
-
-            if (isCalendarOpen) {
-                daily.style.display = 'none';
-                cal.style.display = 'block';
-                btnText.innerText = "Back to Today";
-                btnIcon.innerText = "⌚";
-            } else {
-                daily.style.display = 'flex';
-                cal.style.display = 'none';
-                btnText.innerText = "Month View";
-                btnIcon.innerText = "📅";
-                renderDailyView(selectedDate.getDate());
-            }
-        }
-
-        function changeMonth(delta) {
-            viewDate.setMonth(viewDate.getMonth() + delta);
-            fetchData(); 
-        }
-
-        // --- HELPERS ---
-        function formatTime(dateObj) {
-            let h = dateObj.getHours();
-            let m = dateObj.getMinutes();
-            let suffix = h >= 12 ? "PM" : "AM";
-            h = h % 12 || 12;
-            return `${h}:${String(m).padStart(2,'0')} ${suffix}`;
-        }
-
-        function convertTo12Hour(time24) {
-            let [h, m] = time24.split(':');
-            let suffix = h >= 12 ? "PM" : "AM";
-            h = h % 12 || 12;
-            return `${h}:${m} ${suffix}`;
-        }
-
-        function isSameDate(d1, d2) {
-            return d1.getDate() === d2.getDate() && 
-                   d1.getMonth() === d2.getMonth() && 
-                   d1.getFullYear() === d2.getFullYear();
-        }
-
-        // --- SAFETY CHECKED HIGHLIGHTER ---
+        // --- HIGHLIGHTER + RED COUNTDOWN ---
         function highlightNextPrayer(now) {
             const dayNum = now.getDate();
             const timings = currentMonthData[dayNum];
-            
-            // Safety Check 1: Do we have data?
             if(!timings) return;
 
             const nowMins = now.getHours() * 60 + now.getMinutes();
             let found = false;
-
-            // Safety Check 2: Ensure elements exist before removing classes
+            
             const rows = document.querySelectorAll('.prayer-item');
-            if (rows.length === 0) return; // List not built yet
+            if(rows.length === 0) return; 
+
             rows.forEach(e => e.classList.remove('active'));
 
             for(let name of PRAYER_NAMES) {
@@ -427,31 +392,64 @@
                 if (period === 'PM' && h !== 12) h += 12;
                 if (period === 'AM' && h === 12) h = 0;
                 
-                const pMins = h*60 + m;
-                if (pMins > nowMins && !found) {
+                const prayerMins = h*60 + m;
+
+                if (prayerMins > nowMins && !found) {
                     found = true;
-                    // Safety Check 3: Ensure the specific row exists
-                    const row = document.getElementById(`row-${name}`);
-                    if (row) row.classList.add('active');
                     
-                    const nextEl = document.getElementById('next-prayer');
-                    if(nextEl) nextEl.innerText = `Next: ${name} at ${timings[name]}`;
+                    // Countdown Calculation
+                    let diff = prayerMins - nowMins;
+                    let diffStr = "";
+                    if (diff < 60) {
+                        diffStr = `in ${diff}m`;
+                    } else {
+                        const dh = Math.floor(diff / 60);
+                        const dm = diff % 60;
+                        diffStr = `in ${dh}h ${dm}m`;
+                    }
+
+                    const row = document.getElementById(`row-${name}`);
+                    if(row) row.classList.add('active');
+                    
+                    // Use innerHTML to add the RED SPAN
+                    document.getElementById('next-prayer').innerHTML = 
+                        `Next: ${name} at ${timings[name]} <span class="countdown-red">(${diffStr})</span>`;
                 }
             }
             if(!found) {
-                 const nextEl = document.getElementById('next-prayer');
-                 if(nextEl) nextEl.innerText = "Next: Fajr (Tomorrow)";
-                 const row = document.getElementById('row-Fajr');
-                 if(row) row.classList.add('active');
+                document.getElementById('next-prayer').innerText = "Next: Fajr (Tomorrow)";
+                const row = document.getElementById('row-Fajr');
+                if(row) row.classList.add('active');
             }
         }
 
-        function showLoader(show) {
-            const l = document.getElementById('loader');
-            if(l) l.style.display = show ? 'block' : 'none';
+        // --- HELPERS ---
+        function changeLocation() { fetchData(); }
+        function toggleView() {
+            isCalendarOpen = !isCalendarOpen;
+            document.getElementById('daily-view').style.display = isCalendarOpen ? 'none' : 'flex';
+            document.getElementById('calendar-view').style.display = isCalendarOpen ? 'block' : 'none';
+            document.getElementById('btn-text').innerText = isCalendarOpen ? "Back to Today" : "Month View";
+            document.getElementById('btn-icon').innerText = isCalendarOpen ? "⌚" : "📅";
         }
+        function changeMonth(d) {
+            viewDate.setMonth(viewDate.getMonth() + d);
+            fetchData();
+        }
+        function isSameDate(d1, d2) {
+            return d1.getDate() === d2.getDate() && d1.getMonth() === d2.getMonth() && d1.getFullYear() === d2.getFullYear();
+        }
+        function formatTime(d) {
+            let h = d.getHours(), m = d.getMinutes(), s = h>=12?"PM":"AM";
+            return `${h%12||12}:${String(m).padStart(2,'0')} ${s}`;
+        }
+        function convertTo12Hour(t) {
+            let [h,m] = t.split(':');
+            let s = h>=12?"PM":"AM";
+            return `${h%12||12}:${m} ${s}`;
+        }
+        function showLoader(v) { document.getElementById('loader').style.display = v ? 'block' : 'none'; }
 
-        // Start
         init();
     </script>
 </body>
