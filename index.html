@@ -1,0 +1,260 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Prayer Times</title>
+    <style>
+        :root {
+            --primary: #2C3E50;
+            --accent: #27ae60; /* Green for current prayer */
+            --bg: #f4f6f8;
+            --card-bg: #ffffff;
+            --text-light: #7f8c8d;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+            background-color: var(--bg);
+            margin: 0;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            min-height: 100vh;
+            color: var(--primary);
+        }
+
+        /* Header & Location Selector */
+        header {
+            width: 100%;
+            background: var(--card-bg);
+            padding: 20px 0;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.05);
+            text-align: center;
+            position: sticky;
+            top: 0;
+            z-index: 10;
+        }
+
+        h1 { margin: 0; font-size: 1.2rem; font-weight: 600; color: var(--primary); }
+        
+        select {
+            margin-top: 10px;
+            padding: 8px 12px;
+            font-size: 1rem;
+            border-radius: 8px;
+            border: 1px solid #ddd;
+            background: #f9f9f9;
+            width: 80%;
+            max-width: 300px;
+            text-align: center;
+            outline: none;
+        }
+
+        /* Clock */
+        .clock-container {
+            margin: 30px 0 20px 0;
+            text-align: center;
+        }
+        .time-display { font-size: 3.5rem; font-weight: 700; color: var(--primary); letter-spacing: -1px; }
+        .date-display { font-size: 1rem; color: var(--text-light); margin-top: 5px; }
+
+        /* Prayer List */
+        .prayer-list {
+            width: 90%;
+            max-width: 400px;
+            background: var(--card-bg);
+            border-radius: 20px;
+            padding: 10px;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.05);
+            margin-bottom: 30px;
+        }
+
+        .prayer-item {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 15px 20px;
+            border-bottom: 1px solid #eee;
+            transition: background 0.3s;
+        }
+        .prayer-item:last-child { border-bottom: none; }
+
+        .prayer-name { font-size: 1.1rem; font-weight: 500; }
+        .prayer-time { font-size: 1.2rem; font-weight: 700; color: var(--primary); }
+
+        /* Highlight Current Prayer */
+        .prayer-item.active {
+            background-color: #e8f5e9; /* Light green bg */
+            border-radius: 12px;
+            border-bottom: none;
+        }
+        .prayer-item.active .prayer-name, 
+        .prayer-item.active .prayer-time {
+            color: var(--accent);
+        }
+        .prayer-item.active::after {
+            content: '●'; /* Dot indicator */
+            color: var(--accent);
+            font-size: 0.8rem;
+            margin-left: 10px;
+        }
+
+        /* Next Prayer Countdown */
+        .next-prayer-info {
+            background: var(--accent);
+            color: white;
+            padding: 8px 20px;
+            border-radius: 20px;
+            font-size: 0.9rem;
+            margin-bottom: 20px;
+            box-shadow: 0 4px 10px rgba(39, 174, 96, 0.3);
+        }
+
+    </style>
+</head>
+<body>
+
+    <header>
+        <h1>📍 Prayer Times</h1>
+        <select id="location-select" onchange="fetchPrayerTimes()">
+            <option value="Kuala Lumpur,Malaysia">🇲🇾 Kuala Lumpur, Malaysia</option>
+            <option value="Colombo,Sri Lanka">🇱🇰 Colombo, Sri Lanka</option>
+            <option value="Palma,Spain">🇪🇸 Mallorca (Palma), Spain</option>
+            <option value="London,United Kingdom">🇬🇧 Essex/London, UK</option>
+        </select>
+    </header>
+
+    <div class="clock-container">
+        <div class="time-display" id="clock">00:00</div>
+        <div class="date-display" id="date">Loading date...</div>
+        <div class="next-prayer-info" id="next-prayer">Loading...</div>
+    </div>
+
+    <div class="prayer-list" id="prayer-list">
+        <div style="text-align:center; padding:20px; color:#888;">Fetching times...</div>
+    </div>
+
+    <script>
+        // Configuration
+        const API_URL = "https://api.aladhan.com/v1/timingsByCity";
+        const PRAYER_NAMES = ['Fajr', 'Sunrise', 'Dhuhr', 'Asr', 'Maghrib', 'Isha'];
+        
+        // State
+        let timings = {};
+        
+        // 1. Clock Function (Updates every second)
+        function updateClock() {
+            const now = new Date();
+            const timeString = now.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+            document.getElementById('clock').innerText = timeString;
+            
+            const dateString = now.toLocaleDateString('en-GB', { weekday: 'long', day: 'numeric', month: 'long', year: 'numeric' });
+            document.getElementById('date').innerText = dateString;
+
+            highlightNextPrayer();
+        }
+        setInterval(updateClock, 1000);
+
+        // 2. Fetch Data from API
+        async function fetchPrayerTimes() {
+            const selection = document.getElementById('location-select').value;
+            const [city, country] = selection.split(',');
+            const listDiv = document.getElementById('prayer-list');
+            
+            listDiv.innerHTML = '<div style="text-align:center; padding:20px;">Updating...</div>';
+
+            try {
+                // Method 2 = ISNA (North America), Method 3 = MWL (World League), Method 4 = Makkah
+                // We use auto-detection or generic (Method 2 is standard for generic apps)
+                const response = await fetch(`${API_URL}?city=${city}&country=${country}&method=2`);
+                const data = await response.json();
+                
+                if (data.code === 200) {
+                    timings = data.data.timings;
+                    renderPrayers();
+                    highlightNextPrayer();
+                } else {
+                    listDiv.innerHTML = 'Error fetching data.';
+                }
+            } catch (error) {
+                console.error(error);
+                listDiv.innerHTML = 'Network Error. Check internet connection.';
+            }
+        }
+
+        // 3. Render the list
+        function renderPrayers() {
+            const listDiv = document.getElementById('prayer-list');
+            listDiv.innerHTML = ''; // Clear loading text
+
+            PRAYER_NAMES.forEach(name => {
+                const time = convertTo12Hour(timings[name]);
+                
+                const item = document.createElement('div');
+                item.className = 'prayer-item';
+                item.id = `row-${name}`;
+                item.innerHTML = `
+                    <span class="prayer-name">${name}</span>
+                    <span class="prayer-time">${time}</span>
+                `;
+                listDiv.appendChild(item);
+            });
+        }
+
+        // 4. Logic to find "Next" prayer and highlight "Current"
+        function highlightNextPrayer() {
+            if (Object.keys(timings).length === 0) return;
+
+            const now = new Date();
+            const currentTime = now.getHours() * 60 + now.getMinutes();
+            let nextPrayerName = null;
+            let foundNext = false;
+
+            // Remove old highlights
+            document.querySelectorAll('.prayer-item').forEach(el => el.classList.remove('active'));
+
+            for (let name of PRAYER_NAMES) {
+                // API returns "HH:MM", parse it
+                const [h, m] = timings[name].split(':').map(Number);
+                const prayerMinutes = h * 60 + m;
+
+                if (prayerMinutes > currentTime && !foundNext) {
+                    nextPrayerName = name;
+                    foundNext = true;
+                    
+                    // Highlight THIS row as the upcoming/active one
+                    const row = document.getElementById(`row-${name}`);
+                    if (row) row.classList.add('active');
+                    
+                    // Update the pill badge
+                    const time12 = convertTo12Hour(timings[name]);
+                    document.getElementById('next-prayer').innerText = `Next: ${name} at ${time12}`;
+                }
+            }
+
+            // If no next prayer found (i.e., it's after Isha), next is Fajr tomorrow
+            if (!foundNext) {
+                document.getElementById('next-prayer').innerText = `Next: Fajr (Tomorrow)`;
+                // Highlight Fajr if you want, or leave all blank
+                const row = document.getElementById('row-Fajr');
+                if (row) row.classList.add('active');
+            }
+        }
+
+        // Helper: Convert "13:00" to "1:00 PM"
+        function convertTo12Hour(time24) {
+            if (!time24) return "";
+            let [h, m] = time24.split(':');
+            let suffix = h >= 12 ? "PM" : "AM";
+            h = h % 12 || 12;
+            return `${h}:${m} ${suffix}`;
+        }
+
+        // Start
+        fetchPrayerTimes();
+        updateClock();
+
+    </script>
+</body>
+</html>
