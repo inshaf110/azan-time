@@ -3,584 +3,208 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    
     <meta name="apple-mobile-web-app-capable" content="yes">
     <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
-    <meta name="apple-mobile-web-app-title" content="Prayer Times">
-    <meta name="theme-color" content="#ffffff">
-
-    <title>Prayer Times</title>
+    <title>Prayer Times Pro</title>
     <style>
         :root {
-            --primary: #2C3E50;
-            --accent: #27ae60; 
-            --bg: #f4f6f8;
-            --card-bg: #ffffff;
-            --text-light: #95a5a6;
-            --clock-face: #f8f9fa;
-            --hand-color: #333;
-            --second-hand: #e74c3c;
-            --countdown-color: #c0392b;
+            --primary: #2C3E50; --accent: #27ae60; --bg: #f4f6f8; --card-bg: #ffffff;
+            --clock-face: #f8f9fa; --hand-color: #333; --second-hand: #e74c3c; --countdown-color: #c0392b;
         }
         body {
-            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
-            background-color: var(--bg);
-            margin: 0;
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            min-height: 100vh;
-            color: var(--primary);
-            padding-bottom: 40px;
-            padding-top: env(safe-area-inset-top);
-            padding-bottom: env(safe-area-inset-bottom);
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+            background-color: var(--bg); margin: 0; display: flex; flex-direction: column;
+            align-items: center; min-height: 100vh; color: var(--primary); padding-top: env(safe-area-inset-top);
         }
-
-        /* --- Header --- */
         header {
-            width: 100%;
-            background: var(--card-bg);
-            padding: 15px 0 20px 0;
-            box-shadow: 0 4px 20px rgba(0,0,0,0.06);
-            text-align: center;
-            position: sticky;
-            top: 0;
-            z-index: 20;
-            border-bottom-left-radius: 30px;
-            border-bottom-right-radius: 30px;
+            width: 100%; background: var(--card-bg); padding: 15px 0 20px 0;
+            box-shadow: 0 4px 20px rgba(0,0,0,0.06); text-align: center;
+            position: sticky; top: 0; z-index: 20; border-bottom-left-radius: 30px; border-bottom-right-radius: 30px;
         }
-        
-        .header-title { font-weight: 800; font-size: 1.2rem; margin-bottom: 10px; letter-spacing: -0.5px; }
-
         select {
-            padding: 10px 16px; font-size: 1rem;
-            border-radius: 12px; border: 1px solid #e1e4e8; background: #f1f3f5;
-            width: 90%; max-width: 320px; text-align: center; outline: none;
-            font-weight: 600; color: #333; appearance: none;
+            padding: 10px 16px; font-size: 1rem; border-radius: 12px; border: 1px solid #e1e4e8;
+            background: #f1f3f5; width: 90%; max-width: 320px; font-weight: 600; outline: none;
         }
-
-        /* --- Analog World Clocks --- */
-        #world-clocks {
-            display: flex; justify-content: center; gap: 20px;
-            margin-top: 25px; flex-wrap: wrap; width: 100%;
-        }
+        #world-clocks { display: flex; justify-content: center; gap: 20px; margin-top: 25px; flex-wrap: wrap; }
         .clock-wrapper { display: flex; flex-direction: column; align-items: center; width: 70px; }
         .analog-clock {
-            width: 50px; height: 50px; background: var(--clock-face);
-            border-radius: 50%; border: 2px solid #e1e4e8; position: relative;
-            margin-bottom: 8px; box-shadow: inset 0 2px 5px rgba(0,0,0,0.05);
+            width: 50px; height: 50px; background: var(--clock-face); border-radius: 50%;
+            border: 2px solid #e1e4e8; position: relative; margin-bottom: 8px;
         }
-        .analog-clock::after {
-            content: ''; position: absolute; width: 4px; height: 4px; background: #333;
-            border-radius: 50%; top: 50%; left: 50%; transform: translate(-50%, -50%); z-index: 10;
-        }
-        .hand {
-            position: absolute; bottom: 50%; left: 50%; transform-origin: bottom center;
-            border-radius: 4px; transform: translateX(-50%);
-        }
-        .hand.hour { width: 4px; height: 14px; background: var(--hand-color); z-index: 5; }
-        .hand.minute { width: 2px; height: 18px; background: var(--hand-color); z-index: 6; }
-        .hand.second { width: 1px; height: 20px; background: var(--second-hand); z-index: 7; }
-        .mini-clock-label { font-size: 0.7rem; color: #adb5bd; font-weight: 700; text-transform: uppercase; letter-spacing: 0.5px; }
-        .mini-clock-time { font-size: 0.8rem; font-weight: 600; color: #495057; margin-top: 2px; }
-
-        /* --- View Toggle --- */
-        .view-toggle-btn {
-            background: #fff; border: 1px solid var(--accent); color: var(--accent);
-            padding: 10px 24px; border-radius: 30px; font-weight: 600; margin-top: 30px;
-            cursor: pointer; display: flex; align-items: center; gap: 8px;
-            box-shadow: 0 4px 10px rgba(39, 174, 96, 0.15); font-size: 0.95rem;
-            transition: transform 0.1s;
-        }
-        .view-toggle-btn:active { transform: scale(0.96); background: #f0fdf4; }
-
-        /* --- MAIN DISPLAY --- */
-        .daily-view { width: 100%; display: flex; flex-direction: column; align-items: center; }
-        
-        .hero-section {
-            margin: 25px 0 20px 0; text-align: center;
-            display: flex; flex-direction: column; align-items: center;
-        }
-
-        .label-next {
-            font-size: 0.85rem; font-weight: 700; letter-spacing: 1px;
-            color: #adb5bd; text-transform: uppercase; margin-bottom: 5px;
-        }
-
-        .main-prayer-display {
-            font-size: 2.8rem; font-weight: 800; color: var(--primary);
-            line-height: 1.1; letter-spacing: -1px;
-        }
-
-        .big-countdown {
-            font-size: 1.8rem; font-weight: 800; color: var(--countdown-color);
-            margin-top: 5px;
-        }
-
-        .current-time-small {
-            margin-top: 15px; font-size: 1rem; color: var(--text-light);
-            font-weight: 500; background: #e8ecef; padding: 6px 16px;
-            border-radius: 20px; display: inline-block;
-        }
-
-        .prayer-list {
-            width: 90%; max-width: 400px; background: var(--card-bg);
-            border-radius: 24px; padding: 15px;
-            box-shadow: 0 10px 30px rgba(0,0,0,0.04);
-        }
-        .prayer-item {
-            display: flex; justify-content: space-between; align-items: center;
-            padding: 16px 20px; border-bottom: 1px solid #f1f1f1;
-        }
-        .prayer-item:last-child { border-bottom: none; }
-        .prayer-name { font-size: 1.1rem; font-weight: 600; color: #555; }
-        .prayer-time { font-size: 1.25rem; font-weight: 700; color: var(--primary); }
-        .prayer-item.active { background-color: #e8f5e9; border-radius: 16px; border-bottom: none; }
-        .prayer-item.active .prayer-name, .prayer-item.active .prayer-time { color: var(--accent); }
-
-        /* --- Calendar View --- */
-        .calendar-view {
-            display: none; width: 95%; max-width: 400px;
-            background: white; border-radius: 24px;
-            padding: 20px; margin-top: 25px;
-            box-shadow: 0 10px 30px rgba(0,0,0,0.05);
-        }
-        .cal-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; padding: 0 5px; }
-        .cal-title { font-weight: 800; font-size: 1.2rem; color: var(--primary); }
-        .cal-btn {
-            background: #f1f3f5; border: none; width: 36px; height: 36px;
-            border-radius: 50%; cursor: pointer; font-weight: bold; color: #555;
-            transition: background 0.2s;
-        }
-        .cal-btn:active { background: #e9ecef; }
-        .cal-grid { display: grid; grid-template-columns: repeat(7, 1fr); gap: 8px; text-align: center; }
-        .cal-day-name { font-size: 0.75rem; font-weight: 700; color: #adb5bd; margin-bottom: 10px; }
-        .cal-cell {
-            aspect-ratio: 1; display: flex; align-items: center; justify-content: center;
-            border-radius: 12px; font-size: 1rem; cursor: pointer; font-weight: 500;
-            transition: all 0.2s; border: 2px solid transparent; color: #555;
-        }
-        .cal-cell.today { background-color: #e8f5e9; color: var(--accent); font-weight: 800; border-color: var(--accent); }
-        .cal-cell.selected { background-color: var(--primary); color: white; border-color: var(--primary); }
-        .cal-cell.empty { background: transparent; cursor: default; }
-
-        /* --- Loader --- */
-        .loader {
-            position: fixed; top: 50%; left: 50%; transform: translate(-50%, -50%);
-            background: rgba(0,0,0,0.8); color: white; padding: 25px; font-weight: 600;
-            border-radius: 16px; display: none; z-index: 100; backdrop-filter: blur(5px);
-        }
+        .hand { position: absolute; bottom: 50%; left: 50%; transform-origin: bottom center; transform: translateX(-50%); }
+        .hand.hour { width: 4px; height: 14px; background: var(--hand-color); }
+        .hand.minute { width: 2px; height: 18px; background: var(--hand-color); }
+        .hand.second { width: 1px; height: 20px; background: var(--second-hand); }
+        .mini-clock-time { font-size: 0.8rem; font-weight: 600; color: #495057; }
+        .hero-section { margin: 25px 0 20px 0; text-align: center; }
+        .main-prayer-display { font-size: 2.8rem; font-weight: 800; letter-spacing: -1px; }
+        .big-countdown { font-size: 1.8rem; font-weight: 800; color: var(--countdown-color); }
+        .prayer-list { width: 90%; max-width: 400px; background: var(--card-bg); border-radius: 24px; padding: 15px; margin-bottom: 30px;}
+        .prayer-item { display: flex; justify-content: space-between; padding: 16px 20px; border-bottom: 1px solid #f1f1f1; }
+        .prayer-item.active { background-color: #e8f5e9; border-radius: 16px; color: var(--accent); border-bottom: none; }
+        .loader { position: fixed; top: 50%; left: 50%; transform: translate(-50%, -50%); display: none; background: rgba(0,0,0,0.7); color: white; padding: 20px; border-radius: 10px; z-index: 100;}
     </style>
 </head>
 <body>
-
     <header>
-        <div class="header-title">📍 Prayer Times</div>
+        <div style="font-weight:800; margin-bottom:10px;">📍 Prayer Times</div>
         <select id="location-select" onchange="changeLocation()">
+            <option value="MY,WLY01" selected>🇲🇾 Kuala Lumpur (JAKIM)</option>
+            <option value="LONDON_ELM">🇬🇧 London (East London Mosque)</option>
             <option value="ACJU">🇱🇰 Colombo (Official ACJU)</option>
-            <option value="MY,WLY01">🇲🇾 Kuala Lumpur (JAKIM)</option>
             <option value="GLOBAL,Palma,Spain,3,39.5696,2.6502">🇪🇸 Mallorca</option>
-            <option value="GLOBAL,London,United Kingdom,3,51.5074,-0.1278">🇬🇧 Essex/London</option>
         </select>
         <div id="world-clocks"></div>
     </header>
 
-    <button class="view-toggle-btn" onclick="toggleView()">
-        <span id="btn-icon">📅</span> <span id="btn-text">Month View</span>
-    </button>
-
-    <div id="daily-view" class="daily-view">
+    <div id="daily-view" style="width:100%; display:flex; flex-direction:column; align-items:center;">
         <div class="hero-section">
-            <div class="label-next">UPCOMING PRAYER</div>
+            <div style="font-size:0.85rem; font-weight:700; color:#adb5bd;">UPCOMING PRAYER</div>
             <div class="main-prayer-display" id="hero-main">Loading...</div>
             <div class="big-countdown" id="hero-countdown">--</div>
-            <div class="current-time-small" id="clock-small">Now: --:--</div>
         </div>
-
         <div class="prayer-list" id="prayer-list"></div>
-    </div>
-
-    <div id="calendar-view" class="calendar-view">
-        <div class="cal-header">
-            <button class="cal-btn" onclick="changeMonth(-1)">‹</button>
-            <div class="cal-title" id="cal-month-year">...</div>
-            <button class="cal-btn" onclick="changeMonth(1)">›</button>
-        </div>
-        <div class="cal-grid" id="cal-grid"></div>
-        <div style="text-align:center; font-size:0.85rem; color:#888; margin-top:20px;">Tap date for times</div>
     </div>
 
     <div id="loader" class="loader">Fetching Data...</div>
 
     <script>
         const PRAYER_NAMES = ['Fajr', 'Sunrise', 'Dhuhr', 'Asr', 'Maghrib', 'Isha'];
-        const MY_MAP = { 'fajr': 'Fajr', 'syuruk': 'Sunrise', 'dhuhr': 'Dhuhr', 'asr': 'Asr', 'maghrib': 'Maghrib', 'isha': 'Isha' };
-        
         const LOC_INFO = {
-            "ACJU": { name: "Colombo", tz: "Asia/Colombo" },
             "MY,WLY01": { name: "KL", tz: "Asia/Kuala_Lumpur" },
-            "GLOBAL,Palma,Spain,3,39.5696,2.6502": { name: "Mallorca", tz: "Europe/Madrid" },
-            "GLOBAL,London,United Kingdom,3,51.5074,-0.1278": { name: "London", tz: "Europe/London" }
+            "ACJU": { name: "Colombo", tz: "Asia/Colombo" },
+            "LONDON_ELM": { name: "London", tz: "Europe/London" },
+            "GLOBAL,Palma,Spain,3,39.5696,2.6502": { name: "Mallorca", tz: "Europe/Madrid" }
         };
 
-        // --- HARDCODED ACJU DATABASE (Source: PDF) ---
-        // Format: "Month-Day": "Fajr,Sunrise,Dhuhr,Asr,Maghrib,Isha"
-        const ACJU_DB = {
-            // FEB
-            "2-15": "5:10 AM,6:28 AM,12:26 PM,3:47 PM,6:23 PM,7:33 PM",
-            "2-16": "5:10 AM,6:28 AM,12:26 PM,3:47 PM,6:23 PM,7:33 PM",
-            "2-17": "5:10 AM,6:28 AM,12:26 PM,3:47 PM,6:23 PM,7:33 PM",
-            "2-18": "5:10 AM,6:28 AM,12:26 PM,3:47 PM,6:24 PM,7:33 PM",
-            "2-19": "5:09 AM,6:27 AM,12:26 PM,3:46 PM,6:24 PM,7:33 PM",
-            "2-20": "5:09 AM,6:27 AM,12:26 PM,3:46 PM,6:24 PM,7:33 PM",
-            "2-21": "5:09 AM,6:27 AM,12:26 PM,3:46 PM,6:24 PM,7:33 PM",
-            "2-22": "5:09 AM,6:27 AM,12:26 PM,3:46 PM,6:24 PM,7:33 PM",
-            "2-23": "5:09 AM,6:26 AM,12:26 PM,3:45 PM,6:24 PM,7:33 PM",
-            "2-24": "5:08 AM,6:26 AM,12:25 PM,3:45 PM,6:24 PM,7:33 PM",
-            "2-25": "5:08 AM,6:25 AM,12:25 PM,3:45 PM,6:24 PM,7:33 PM",
-            "2-26": "5:08 AM,6:25 AM,12:25 PM,3:44 PM,6:24 PM,7:33 PM",
-            "2-27": "5:08 AM,6:25 AM,12:25 PM,3:44 PM,6:24 PM,7:33 PM",
-            "2-28": "5:07 AM,6:25 AM,12:25 PM,3:44 PM,6:24 PM,7:33 PM",
-            // MAR
-            "3-1": "5:07 AM,6:24 AM,12:24 PM,3:43 PM,6:24 PM,7:33 PM",
-            "3-2": "5:06 AM,6:23 AM,12:24 PM,3:42 PM,6:24 PM,7:33 PM",
-            "3-3": "5:06 AM,6:23 AM,12:24 PM,3:42 PM,6:24 PM,7:33 PM",
-            "3-4": "5:06 AM,6:23 AM,12:24 PM,3:41 PM,6:24 PM,7:33 PM",
-            "3-5": "5:05 AM,6:22 AM,12:23 PM,3:41 PM,6:24 PM,7:33 PM",
-            "3-6": "5:05 AM,6:22 AM,12:23 PM,3:40 PM,6:24 PM,7:33 PM",
-            "3-7": "5:05 AM,6:21 AM,12:23 PM,3:40 PM,6:24 PM,7:32 PM",
-            "3-8": "5:04 AM,6:21 AM,12:23 PM,3:39 PM,6:24 PM,7:32 PM",
-            "3-9": "5:04 AM,6:20 AM,12:23 PM,3:39 PM,6:24 PM,7:32 PM",
-            "3-10": "5:03 AM,6:20 AM,12:22 PM,3:38 PM,6:24 PM,7:32 PM",
-            "3-11": "5:03 AM,6:20 AM,12:22 PM,3:37 PM,6:23 PM,7:32 PM",
-            "3-12": "5:02 AM,6:19 AM,12:22 PM,3:37 PM,6:23 PM,7:32 PM",
-            "3-13": "5:02 AM,6:19 AM,12:21 PM,3:36 PM,6:23 PM,7:32 PM",
-            "3-14": "5:02 AM,6:18 AM,12:21 PM,3:36 PM,6:23 PM,7:32 PM",
-            "3-15": "5:01 AM,6:18 AM,12:21 PM,3:35 PM,6:23 PM,7:32 PM",
-            "3-16": "5:01 AM,6:17 AM,12:21 PM,3:34 PM,6:23 PM,7:32 PM",
-            "3-17": "5:00 AM,6:17 AM,12:20 PM,3:34 PM,6:23 PM,7:31 PM",
-            "3-18": "5:00 AM,6:16 AM,12:20 PM,3:33 PM,6:23 PM,7:31 PM",
-            "3-19": "4:59 AM,6:16 AM,12:20 PM,3:32 PM,6:23 PM,7:31 PM",
-            "3-20": "4:59 AM,6:15 AM,12:19 PM,3:31 PM,6:23 PM,7:31 PM",
-            "3-21": "4:58 AM,6:15 AM,12:19 PM,3:31 PM,6:23 PM,7:31 PM",
-            "3-22": "4:58 AM,6:14 AM,12:19 PM,3:30 PM,6:22 PM,7:31 PM",
-            "3-23": "4:57 AM,6:14 AM,12:19 PM,3:29 PM,6:22 PM,7:31 PM",
-            "3-24": "4:57 AM,6:13 AM,12:18 PM,3:28 PM,6:22 PM,7:31 PM",
-            "3-25": "4:56 AM,6:13 AM,12:18 PM,3:28 PM,6:22 PM,7:31 PM",
-            "3-26": "4:56 AM,6:12 AM,12:18 PM,3:27 PM,6:22 PM,7:31 PM",
-            "3-27": "4:55 AM,6:12 AM,12:17 PM,3:26 PM,6:22 PM,7:31 PM",
-            "3-28": "4:55 AM,6:11 AM,12:17 PM,3:25 PM,6:22 PM,7:30 PM",
-            "3-29": "4:54 AM,6:11 AM,12:17 PM,3:24 PM,6:22 PM,7:30 PM",
-            "3-30": "4:53 AM,6:10 AM,12:16 PM,3:23 PM,6:22 PM,7:30 PM",
-            "3-31": "4:53 AM,6:10 AM,12:16 PM,3:22 PM,6:21 PM,7:30 PM",
-            // APR
-            "4-1": "4:52 AM,6:09 AM,12:16 PM,3:21 PM,6:21 PM,7:30 PM",
-            "4-2": "4:52 AM,6:09 AM,12:16 PM,3:20 PM,6:21 PM,7:30 PM",
-            "4-3": "4:51 AM,6:08 AM,12:15 PM,3:20 PM,6:21 PM,7:30 PM",
-            "4-4": "4:51 AM,6:08 AM,12:15 PM,3:19 PM,6:21 PM,7:30 PM",
-            "4-5": "4:50 AM,6:07 AM,12:15 PM,3:18 PM,6:21 PM,7:30 PM",
-            "4-6": "4:50 AM,6:07 AM,12:14 PM,3:17 PM,6:21 PM,7:30 PM",
-            "4-7": "4:49 AM,6:06 AM,12:14 PM,3:16 PM,6:21 PM,7:30 PM",
-            "4-8": "4:48 AM,6:06 AM,12:14 PM,3:15 PM,6:21 PM,7:30 PM",
-            "4-9": "4:48 AM,6:05 AM,12:14 PM,3:16 PM,6:21 PM,7:30 PM",
-            "4-10": "4:47 AM,6:05 AM,12:13 PM,3:16 PM,6:21 PM,7:30 PM",
-            "4-11": "4:47 AM,6:05 AM,12:13 PM,3:17 PM,6:20 PM,7:30 PM",
-            "4-12": "4:46 AM,6:04 AM,12:13 PM,3:18 PM,6:20 PM,7:30 PM",
-            "4-13": "4:46 AM,6:04 AM,12:12 PM,3:18 PM,6:20 PM,7:30 PM",
-            "4-14": "4:45 AM,6:03 AM,12:12 PM,3:19 PM,6:20 PM,7:30 PM",
-            "4-15": "4:45 AM,6:03 AM,12:12 PM,3:19 PM,6:20 PM,7:30 PM"
+        // MANUALLY SYNCED DATABASE
+        const LONDON_DATA = {
+            "1": ["6:26,8:03,12:09,2:17,4:05,5:42","6:26,8:03,12:10,2:18,4:06,5:43","6:26,8:03,12:10,2:19,4:08,5:45","6:26,8:03,12:11,2:20,4:09,5:46","6:25,8:02,12:11,2:21,4:10,5:47","6:25,8:02,12:12,2:22,4:11,5:48","6:25,8:02,12:12,2:24,4:12,5:49","6:24,8:01,12:12,2:25,4:14,5:51","6:24,8:01,12:13,2:26,4:15,5:52","6:23,8:00,12:13,2:27,4:17,5:54","6:23,8:00,12:14,2:29,4:18,5:55","6:22,7:59,12:14,2:30,4:19,5:56","6:21,7:58,12:14,2:32,4:21,5:58","6:20,7:57,12:15,2:33,4:22,5:59","6:20,7:57,12:15,2:35,4:24,6:01","6:19,7:56,12:15,2:36,4:26,6:03","6:18,7:55,12:16,2:38,4:27,6:04","6:17,7:54,12:16,2:39,4:29,6:06","6:16,7:53,12:16,2:41,4:30,6:07","6:15,7:52,12:17,2:42,4:32,6:09","6:14,7:51,12:17,2:44,4:34,6:11","6:13,7:50,12:17,2:45,4:35,6:12","6:11,7:48,12:17,2:47,4:37,6:14","6:10,7:47,12:18,2:49,4:39,6:16","6:09,7:46,12:18,2:50,4:41,6:18","6:08,7:45,12:18,2:52,4:42,6:19","6:06,7:43,12:18,2:54,4:44,6:21","6:05,7:42,12:19,2:55,4:46,6:23","6:03,7:40,12:19,2:57,4:48,6:25","6:02,7:39,12:19,2:59,4:49,6:26","6:00,7:37,12:19,3:00,4:51,6:28"],
+            "2": ["5:59,7:36,12:19,3:02,4:53,6:29","5:57,7:34,12:19,3:04,4:55,6:30","5:56,7:33,12:19,3:06,4:57,6:31","5:54,7:31,12:20,3:07,4:59,6:33","5:53,7:30,12:20,3:09,5:00,6:33","5:51,7:28,12:20,3:11,5:02,6:35","5:49,7:26,12:20,3:12,5:04,6:36","5:47,7:24,12:20,3:14,5:06,6:38","5:46,7:23,12:20,3:16,5:08,6:39","5:44,7:21,12:20,3:17,5:10,6:41","5:42,7:19,12:20,3:19,5:11,6:42","5:40,7:17,12:20,3:21,5:13,6:44","5:38,7:15,12:20,3:23,5:15,6:45","5:36,7:13,12:20,3:24,5:17,6:47","5:35,7:12,12:20,3:26,5:19,6:49","5:33,7:10,12:20,3:28,5:21,6:51","5:31,7:08,12:20,3:29,5:22,6:51","5:29,7:06,12:20,3:31,5:24,6:53","5:27,7:04,12:19,3:33,5:26,6:55","5:25,7:02,12:19,3:34,5:28,6:57","5:23,7:00,12:19,3:36,5:30,6:58","5:21,6:58,12:19,3:38,5:31,6:59","5:19,6:56,12:19,3:39,5:33,7:01","5:17,6:54,12:19,3:41,5:35,7:03","5:14,6:51,12:19,3:42,5:37,7:04","5:12,6:49,12:19,3:44,5:39,7:06","5:10,6:47,12:18,3:46,5:40,7:07","5:08,6:45,12:18,3:47,5:42,7:09"],
+            "3": ["5:06,6:43,12:18,3:49,5:44,7:10","5:04,6:41,12:18,3:50,5:46,7:12","5:02,6:39,12:18,3:52,5:47,7:12","4:59,6:36,12:17,3:53,5:49,7:14","4:57,6:34,12:17,3:55,5:51,7:15","4:55,6:32,12:17,3:56,5:53,7:17","4:53,6:30,12:17,3:58,5:54,7:17","4:51,6:28,12:16,3:59,5:56,7:19","4:48,6:25,12:16,4:01,5:58,7:20","4:46,6:23,12:16,4:02,6:00,7:22","4:44,6:21,12:16,4:04,6:01,7:23","4:42,6:19,12:15,4:05,6:03,7:25","4:39,6:16,12:15,4:06,6:05,7:26","4:37,6:14,12:15,4:08,6:06,7:27","4:35,6:12,12:15,4:09,6:08,7:29","4:33,6:10,12:14,4:11,6:10,7:31","4:30,6:07,12:14,4:12,6:12,7:32","4:28,6:05,12:14,4:13,6:13,7:33","4:26,6:03,12:13,4:15,6:15,7:35","4:25,6:01,12:13,4:16,6:17,7:37","4:22,5:58,12:13,4:17,6:18,7:37","4:21,5:56,12:13,4:19,6:20,7:39","4:19,5:54,12:12,4:20,6:22,7:41","4:16,5:51,12:12,4:21,6:23,7:42","4:14,5:49,12:12,4:23,6:25,7:43","4:13,5:47,12:11,4:24,6:27,7:45","4:11,5:45,12:11,4:25,6:28,7:46","4:09,5:42,12:11,4:27,6:30,7:48","5:07,6:40,1:10,5:28,7:32,8:49","5:05,6:38,1:10,5:29,7:34,8:51","5:03,6:35,1:10,5:30,7:35,8:52"],
+            "4": ["5:01,6:33,1:10,5:32,7:37,8:54","4:59,6:31,1:09,5:33,7:39,8:56","4:57,6:29,1:09,5:34,7:40,8:56","4:54,6:26,1:09,5:35,7:42,8:58","4:52,6:24,1:08,5:36,7:44,9:00","4:50,6:22,1:08,5:38,7:45,9:01","4:48,6:20,1:08,5:39,7:47,9:03","4:45,6:17,1:07,5:40,7:49,9:05","4:43,6:15,1:07,5:41,7:50,9:05","4:41,6:13,1:07,5:42,7:52,9:07","4:39,6:11,1:07,5:43,7:54,9:09","4:37,6:09,1:06,5:45,7:55,9:10","4:34,6:06,1:06,5:46,7:57,9:12","4:32,6:04,1:06,5:47,7:59,9:14","4:30,6:02,1:06,5:48,8:00,9:15","4:28,6:00,1:05,5:49,8:02,9:17","4:26,5:58,1:05,5:50,8:04,9:18","4:23,5:56,1:05,5:51,8:05,9:19","4:21,5:54,1:05,5:52,8:07,9:21","4:19,5:52,1:05,5:53,8:09,9:23","4:15,5:49,1:04,5:55,8:10,9:24","4:13,5:47,1:04,5:56,8:12,9:26","4:11,5:45,1:04,5:57,8:14,9:27","4:08,5:43,1:04,5:58,8:15,9:28","4:06,5:41,1:04,5:59,8:17,9:30","4:04,5:39,1:03,6:00,8:19,9:31","4:01,5:37,1:03,6:01,8:20,9:32","3:59,5:35,1:03,6:02,8:22,9:34","3:58,5:34,1:03,6:03,8:24,9:35","3:55,5:32,1:03,6:04,8:25,9:36"]
         };
 
-        let currentMonthData = {}; 
-        let selectedDate = new Date(); 
-        let viewDate = new Date(); 
-        let isCalendarOpen = false;
+        const COLOMBO_DATA = {
+            "2": ["5:10,6:30,12:26,3:47,6:20,7:32","5:10,6:30,12:26,3:47,6:21,7:32","5:10,6:30,12:26,3:48,6:21,7:32","5:10,6:30,12:26,3:48,6:21,7:32","5:10,6:30,12:26,3:48,6:21,7:33","5:10,6:29,12:26,3:48,6:22,7:33","5:10,6:29,12:26,3:48,6:22,7:33","5:10,6:29,12:26,3:48,6:22,7:33","5:10,6:29,12:26,3:48,6:22,7:33","5:10,6:29,12:26,3:48,6:22,7:33","5:10,6:29,12:26,3:47,6:23,7:33","5:10,6:29,12:26,3:47,6:23,7:33","5:10,6:29,12:26,3:47,6:23,7:33","5:10,6:28,12:26,3:47,6:23,7:33","5:10,6:28,12:26,3:47,6:23,7:33","5:10,6:28,12:26,3:47,6:23,7:33","5:10,6:28,12:26,3:47,6:23,7:33","5:10,6:28,12:26,3:47,6:24,7:33","5:09,6:27,12:26,3:46,6:24,7:33","5:09,6:27,12:26,3:46,6:24,7:33","5:09,6:27,12:26,3:46,6:24,7:33","5:09,6:27,12:26,3:46,6:24,7:33","5:09,6:26,12:26,3:45,6:24,7:33","5:08,6:26,12:25,3:45,6:24,7:33","5:08,6:25,12:25,3:45,6:24,7:33","5:08,6:25,12:25,3:44,6:24,7:33","5:08,6:25,12:25,3:44,6:24,7:33","5:07,6:25,12:25,3:44,6:24,7:33","5:07,6:24,12:25,3:43,6:24,7:33"],
+            "3": ["5:07,6:24,12:24,3:43,6:24,7:33","5:06,6:23,12:24,3:42,6:24,7:33","5:06,6:23,12:24,3:42,6:24,7:33","5:06,6:23,12:24,3:41,6:24,7:33","5:05,6:22,12:23,3:41,6:24,7:33","5:05,6:22,12:23,3:40,6:24,7:33","5:05,6:21,12:23,3:40,6:24,7:32","5:04,6:21,12:23,3:39,6:24,7:32","5:04,6:20,12:23,3:39,6:24,7:32","5:03,6:20,12:22,3:38,6:24,7:32","5:03,6:20,12:22,3:37,6:23,7:32","5:02,6:19,12:22,3:37,6:23,7:32","5:02,6:19,12:21,3:36,6:23,7:32","5:02,6:18,12:21,3:36,6:23,7:32","5:01,6:18,12:21,3:35,6:23,7:32","5:01,6:17,12:21,3:34,6:23,7:32","5:00,6:17,12:20,3:34,6:23,7:31","5:00,6:16,12:20,3:33,6:23,7:31","4:59,6:16,12:20,3:32,6:23,7:31","4:59,6:15,12:19,3:31,6:23,7:31","4:58,6:15,12:19,3:31,6:23,7:31","4:58,6:14,12:19,3:30,6:22,7:31","4:57,6:14,12:19,3:29,6:22,7:31","4:57,6:13,12:18,3:28,6:22,7:31","4:56,6:13,12:18,3:28,6:22,7:31","4:56,6:12,12:18,3:27,6:22,7:31","4:55,6:12,12:17,3:26,6:22,7:31","4:55,6:11,12:17,3:25,6:22,7:30","4:54,6:11,12:17,3:24,6:22,7:30","4:53,6:10,12:16,3:23,6:22,7:30","4:53,6:10,12:16,3:22,6:21,7:30"],
+            "4": ["4:52,6:09,12:16,3:21,6:21,7:30","4:52,6:09,12:16,3:20,6:21,7:30","4:51,6:08,12:15,3:20,6:21,7:30","4:51,6:08,12:15,3:19,6:21,7:30","4:50,6:07,12:15,3:18,6:21,7:30","4:50,6:07,12:14,3:17,6:21,7:30","4:49,6:06,12:14,3:16,6:21,7:30","4:48,6:06,12:14,3:15,6:21,7:30","4:48,6:05,12:14,3:16,6:21,7:30","4:47,6:05,12:13,3:16,6:21,7:30","4:47,6:05,12:13,3:17,6:20,7:30","4:46,6:04,12:13,3:18,6:20,7:30","4:46,6:04,12:12,3:18,6:20,7:30","4:45,6:03,12:12,3:19,6:20,7:30","4:45,6:03,12:12,3:19,6:20,7:30","4:44,6:02,12:12,3:19,6:20,7:30","4:44,6:02,12:12,3:20,6:20,7:30","4:43,6:02,12:11,3:20,6:20,7:30","4:43,6:01,12:11,3:21,6:20,7:30","4:42,6:01,12:11,3:21,6:20,7:30","4:42,6:00,12:11,3:22,6:20,7:30","4:41,6:00,12:10,3:22,6:20,7:30","4:41,6:00,12:10,3:22,6:20,7:31","4:40,5:59,12:10,3:23,6:20,7:31","4:40,5:59,12:10,3:23,6:20,7:31","4:39,5:59,12:10,3:24,6:20,7:31","4:39,5:58,12:10,3:24,6:20,7:31","4:38,5:58,12:09,3:24,6:20,7:31","4:38,5:58,12:09,3:25,6:20,7:31","4:37,5:57,12:09,3:25,6:20,7:31"]
+        };
+
+        let currentMonthData = {};
 
         function init() {
             setInterval(updateClock, 1000);
-            updateClock();
             fetchData();
-        }
-
-        function updateClock() {
-            const now = new Date();
-            // 1. Update Main Digital Clock
-            if (isSameDate(selectedDate, now)) {
-                document.getElementById('clock-small').innerText = "Now: " + now.toLocaleTimeString('en-US', { hour: 'numeric', minute: '2-digit', hour12: true });
-                
-                // SAFE CHECK: Ensure data exists before running highlighter
-                const dayNum = now.getDate();
-                if(currentMonthData && currentMonthData[dayNum]) {
-                    updateHeroDisplay(now);
-                }
-            }
-            updateWorldClocks(now);
-        }
-
-        function updateWorldClocks(now) {
-            const currentVal = document.getElementById('location-select').value;
-            const container = document.getElementById('world-clocks');
-            
-            if (container.children.length === 0) {
-                Object.keys(LOC_INFO).forEach(key => {
-                    const div = document.createElement('div');
-                    div.className = 'clock-wrapper';
-                    div.dataset.key = key; 
-                    div.innerHTML = `
-                        <div class="analog-clock">
-                            <div class="hand hour" id="h-${key}"></div>
-                            <div class="hand minute" id="m-${key}"></div>
-                            <div class="hand second" id="s-${key}"></div>
-                        </div>
-                        <div class="mini-clock-label">${LOC_INFO[key].name}</div>
-                        <div class="mini-clock-time">--:--</div>
-                    `;
-                    container.appendChild(div);
-                });
-            }
-
-            Array.from(container.children).forEach(wrapper => {
-                const key = wrapper.dataset.key;
-                if (key === currentVal) {
-                    wrapper.style.display = 'none';
-                    return;
-                }
-                wrapper.style.display = 'flex';
-
-                const tz = LOC_INFO[key].tz;
-                const tzTimeStr = now.toLocaleTimeString('en-US', { timeZone: tz, hour12: false });
-                const [hStr, mStr, sStr] = tzTimeStr.split(':');
-                const h = parseInt(hStr); const m = parseInt(mStr); const s = parseInt(sStr);
-
-                const displayTime = now.toLocaleTimeString('en-US', { timeZone: tz, hour: 'numeric', minute:'2-digit', hour12: true });
-                wrapper.querySelector('.mini-clock-time').innerText = displayTime;
-
-                const sDeg = s * 6;
-                const mDeg = (m * 6) + (s * 0.1);
-                const hDeg = (h * 30) + (m * 0.5);
-
-                wrapper.querySelector('.hand.second').style.transform = `translateX(-50%) rotate(${sDeg}deg)`;
-                wrapper.querySelector('.hand.minute').style.transform = `translateX(-50%) rotate(${mDeg}deg)`;
-                wrapper.querySelector('.hand.hour').style.transform = `translateX(-50%) rotate(${hDeg}deg)`;
-            });
         }
 
         async function fetchData() {
             showLoader(true);
             const selection = document.getElementById('location-select').value;
-            const year = viewDate.getFullYear();
-            const month = viewDate.getMonth() + 1; // 1-12
-            currentMonthData = {}; 
-
+            const now = new Date();
+            const year = now.getFullYear();
+            const month = now.getMonth() + 1;
+            currentMonthData = {};
+            
             try {
-                if (selection === 'ACJU') {
-                    // --- ACJU MANUAL MODE ---
-                    // Load data from hardcoded dictionary
-                    // We need to populate currentMonthData for the whole month (1 to 31)
-                    // Loop through days 1-31
-                    for(let i=1; i<=31; i++) {
-                        let key = `${month}-${i}`;
-                        if (ACJU_DB[key]) {
-                            const times = ACJU_DB[key].split(',');
-                            currentMonthData[i] = {
-                                'Fajr': times[0],
-                                'Sunrise': times[1],
-                                'Dhuhr': times[2],
-                                'Asr': times[3],
-                                'Maghrib': times[4],
-                                'Isha': times[5]
-                            };
-                        }
-                    }
-                    // Note: If no data found (e.g. May/June), it will be empty.
-                    // You can add a fallback logic here later if needed.
-                    
-                } else if (selection.startsWith('MY')) {
-                    const zone = selection.split(',')[1];
-                    const url = `https://api.waktusolat.app/v2/solat/${zone}?year=${year}&month=${month}`;
-                    const resp = await fetch(url);
+                if (selection === "LONDON_ELM") {
+                    const days = LONDON_DATA[month] || [];
+                    days.forEach((str, i) => {
+                        const t = str.split(',');
+                        currentMonthData[i+1] = { 'Fajr': t[0]+' AM', 'Sunrise': t[1]+' AM', 'Dhuhr': t[2]+' PM', 'Asr': t[3]+' PM', 'Maghrib': t[4]+' PM', 'Isha': t[5]+' PM' };
+                    });
+                } else if (selection === "ACJU") {
+                    const days = COLOMBO_DATA[month] || [];
+                    days.forEach((str, i) => {
+                        const t = str.split(',');
+                        currentMonthData[i+1] = { 'Fajr': t[0]+' AM', 'Sunrise': t[1]+' AM', 'Dhuhr': t[2]+' PM', 'Asr': t[3]+' PM', 'Maghrib': t[4]+' PM', 'Isha': t[5]+' PM' };
+                    });
+                } else if (selection.startsWith("MY")) {
+                    const resp = await fetch(`https://api.waktusolat.app/v2/solat/WLY01?year=${year}&month=${month}`);
                     const data = await resp.json();
                     data.prayers.forEach(p => {
-                        const timings = {};
-                        for (let k in MY_MAP) {
-                            if (p[k]) {
-                                const d = new Date(p[k] * 1000);
-                                timings[MY_MAP[k]] = formatTime(d);
-                            }
-                        }
-                        currentMonthData[p.day] = timings;
+                        currentMonthData[p.day] = { 'Fajr': fmtJAKIM(p.fajr), 'Sunrise': fmtJAKIM(p.syuruk), 'Dhuhr': fmtJAKIM(p.dhuhr), 'Asr': fmtJAKIM(p.asr), 'Maghrib': fmtJAKIM(p.maghrib), 'Isha': fmtJAKIM(p.isha) };
                     });
                 } else {
                     const parts = selection.split(',');
-                    const [_, city, country, methodID, lat, lng] = parts;
-                    let url = lat ? `https://api.aladhan.com/v1/calendar/${year}/${month}?latitude=${lat}&longitude=${lng}&method=${methodID}`
-                                  : `https://api.aladhan.com/v1/calendarByCity/${year}/${month}?city=${city}&country=${country}&method=${methodID}`;
-                    
+                    const url = `https://api.aladhan.com/v1/calendar/${year}/${month}?latitude=${parts[4]}&longitude=${parts[5]}&method=${parts[3]}`;
                     const resp = await fetch(url);
                     const data = await resp.json();
-                    data.data.forEach(item => {
-                        const dayNum = parseInt(item.date.gregorian.day);
-                        const timings = {};
-                        PRAYER_NAMES.forEach(n => { timings[n] = convertTo12Hour(item.timings[n].split(' ')[0]); });
-                        currentMonthData[dayNum] = timings;
+                    data.data.forEach((item, idx) => {
+                        currentMonthData[idx+1] = {};
+                        PRAYER_NAMES.forEach(p => { currentMonthData[idx+1][p] = convertTo12Hour(item.timings[p].split(' ')[0]); });
                     });
                 }
-
-                renderCalendar();
-                if (selectedDate.getMonth() === viewDate.getMonth()) {
-                    renderDailyView(selectedDate.getDate());
-                } else {
-                    renderDailyView(1); 
-                }
-            } catch (e) {
-                console.error(e);
-                alert("Connection Error.");
-            } finally {
-                showLoader(false);
-            }
+                renderDailyView(now.getDate());
+            } catch (e) { console.error(e); } finally { showLoader(false); }
         }
 
         function renderDailyView(dayNum) {
-            const listDiv = document.getElementById('prayer-list');
-            listDiv.innerHTML = '';
-            
+            const list = document.getElementById('prayer-list');
+            list.innerHTML = '';
             const timings = currentMonthData[dayNum];
-            const d = new Date(viewDate.getFullYear(), viewDate.getMonth(), dayNum);
-            const now = new Date();
-
-            if (!isSameDate(d, now)) {
-                document.getElementById('hero-main').innerText = d.toLocaleDateString('en-GB', { day:'numeric', month:'short' });
-                document.getElementById('hero-countdown').innerText = "Future Date";
-                document.getElementById('hero-countdown').style.color = "#999";
-                document.getElementById('clock-small').innerText = "Viewing List";
-            } else {
-                updateClock(); 
-            }
-
-            if (!timings) {
-                listDiv.innerHTML = '<div style="text-align:center; padding:20px;">No Data for this date</div>';
-                return;
-            }
-
+            if(!timings) return;
             PRAYER_NAMES.forEach(name => {
-                const time = timings[name] || '--:--';
                 const row = document.createElement('div');
-                row.className = 'prayer-item';
-                row.id = `row-${name}`;
-                row.innerHTML = `<span class="prayer-name">${name}</span><span class="prayer-time">${time}</span>`;
-                listDiv.appendChild(row);
+                row.className = 'prayer-item'; row.id = `row-${name}`;
+                row.innerHTML = `<span>${name}</span><strong>${timings[name]}</strong>`;
+                list.appendChild(row);
             });
-            if (isSameDate(d, now)) updateHeroDisplay(now);
+            updateHeroDisplay(new Date());
         }
 
-        function renderCalendar() {
-            const grid = document.getElementById('cal-grid');
-            document.getElementById('cal-month-year').innerText = viewDate.toLocaleDateString('en-US', { month: 'long', year: 'numeric' });
-            grid.innerHTML = '';
-            const year = viewDate.getFullYear();
-            const month = viewDate.getMonth();
-            const firstDay = new Date(year, month, 1).getDay();
-            const daysInMonth = new Date(year, month + 1, 0).getDate();
-            ['S','M','T','W','T','F','S'].forEach(d => grid.innerHTML += `<div class="cal-day-name">${d}</div>`);
-            for (let i = 0; i < firstDay; i++) grid.innerHTML += `<div class="cal-cell empty"></div>`;
-            const today = new Date();
-            for (let i = 1; i <= daysInMonth; i++) {
-                const cell = document.createElement('div');
-                cell.className = 'cal-cell';
-                cell.innerText = i;
-                if (i === today.getDate() && month === today.getMonth() && year === today.getFullYear()) cell.classList.add('today');
-                if (i === selectedDate.getDate() && month === selectedDate.getMonth() && year === selectedDate.getFullYear()) cell.classList.add('selected');
-                cell.onclick = () => {
-                    selectedDate = new Date(year, month, i);
-                    toggleView();
-                    renderDailyView(i);
-                    renderCalendar(); 
-                };
-                grid.appendChild(cell);
-            }
+        function updateClock() {
+            const now = new Date();
+            updateHeroDisplay(now);
+            updateAnalogClocks(now);
         }
 
         function updateHeroDisplay(now) {
             const dayNum = now.getDate();
             const timings = currentMonthData[dayNum];
             if(!timings) return;
-
             const nowMins = now.getHours() * 60 + now.getMinutes();
             let found = false;
-            
-            // ERROR FIX: Check if DOM elements exist (fixes 'classList' error)
-            const rows = document.querySelectorAll('.prayer-item');
-            if(rows.length === 0) return; 
-
-            rows.forEach(e => e.classList.remove('active'));
-
             for(let name of PRAYER_NAMES) {
-                if (!timings[name]) continue;
-                // Parse 12h time
-                const [time, period] = timings[name].split(' ');
-                let [h, m] = time.split(':').map(Number);
-                if (period === 'PM' && h !== 12) h += 12;
-                if (period === 'AM' && h === 12) h = 0;
-                
-                const prayerMins = h*60 + m;
-
+                const prayerMins = getMins(timings[name]);
                 if (prayerMins > nowMins && !found) {
                     found = true;
-                    
-                    let diff = prayerMins - nowMins;
-                    let diffStr = "";
-                    if (diff < 60) {
-                        diffStr = `in ${diff}m`;
-                    } else {
-                        const dh = Math.floor(diff / 60);
-                        const dm = diff % 60;
-                        diffStr = `in ${dh}h ${dm}m`;
-                    }
-
-                    const row = document.getElementById(`row-${name}`);
-                    if(row) row.classList.add('active');
-                    
-                    document.getElementById('hero-main').innerHTML = `${name} ${timings[name]}`;
-                    document.getElementById('hero-countdown').innerText = diffStr;
-                    document.getElementById('hero-countdown').style.color = "var(--countdown-color)";
+                    const diff = prayerMins - nowMins;
+                    document.getElementById('hero-main').innerText = `${name} ${timings[name]}`;
+                    document.getElementById('hero-countdown').innerText = diff < 60 ? `in ${diff}m` : `in ${Math.floor(diff/60)}h ${diff%60}m`;
+                    document.querySelectorAll('.prayer-item').forEach(el => el.classList.toggle('active', el.id === `row-${name}`));
                 }
             }
-
-            if(!found) {
-                document.getElementById('hero-main').innerText = "Fajr Tomorrow";
-                document.getElementById('hero-countdown').innerText = "--";
-                const row = document.getElementById('row-Fajr');
-                if(row) row.classList.add('active');
-            }
         }
 
-        function changeLocation() { fetchData(); }
-        function toggleView() {
-            isCalendarOpen = !isCalendarOpen;
-            document.getElementById('daily-view').style.display = isCalendarOpen ? 'none' : 'flex';
-            document.getElementById('calendar-view').style.display = isCalendarOpen ? 'block' : 'none';
-            document.getElementById('btn-text').innerText = isCalendarOpen ? "Back to Today" : "Month View";
-            document.getElementById('btn-icon').innerText = isCalendarOpen ? "⌚" : "📅";
+        function updateAnalogClocks(now) {
+            const container = document.getElementById('world-clocks');
+            const currentLoc = document.getElementById('location-select').value;
+            container.innerHTML = '';
+            Object.keys(LOC_INFO).forEach(key => {
+                if(key === currentLoc) return;
+                const time = new Date(now.toLocaleString("en-US", {timeZone: LOC_INFO[key].tz}));
+                const h = time.getHours(), m = time.getMinutes();
+                container.innerHTML += `<div class="clock-wrapper"><div class="analog-clock">
+                    <div class="hand hour" style="transform:translateX(-50%) rotate(${h*30 + m*0.5}deg)"></div>
+                    <div class="hand minute" style="transform:translateX(-50%) rotate(${m*6}deg)"></div>
+                </div><div style="font-size:0.7rem; font-weight:700;">${LOC_INFO[key].name}</div>
+                <div class="mini-clock-time">${time.toLocaleTimeString([], {hour:'numeric', minute:'2-digit'})}</div></div>`;
+            });
         }
-        function changeMonth(d) {
-            viewDate.setMonth(viewDate.getMonth() + d);
-            fetchData();
-        }
-        function isSameDate(d1, d2) {
-            return d1.getDate() === d2.getDate() && d1.getMonth() === d2.getMonth() && d1.getFullYear() === d2.getFullYear();
-        }
-        function formatTime(d) {
-            let h = d.getHours(), m = d.getMinutes(), s = h>=12?"PM":"AM";
-            return `${h%12||12}:${String(m).padStart(2,'0')} ${s}`;
-        }
+
         function convertTo12Hour(t) {
-            if(!t) return "--:--";
-            let [h,m] = t.split(':');
-            let s = h>=12?"PM":"AM";
-            return `${h%12||12}:${m} ${s}`;
+            let [h, m] = t.split(':'); h = parseInt(h);
+            return `${h % 12 || 12}:${m} ${h >= 12 ? 'PM' : 'AM'}`;
+        }
+        function fmtJAKIM(ts) { return convertTo12Hour(new Date(ts * 1000).toLocaleTimeString('en-GB', {hour12:false}).slice(0,5)); }
+        function getMins(t12) {
+            let [time, part] = t12.split(' '); let [h, m] = time.split(':').map(Number);
+            if(part === 'PM' && h !== 12) h += 12; if(part === 'AM' && h === 12) h = 0;
+            return h * 60 + m;
         }
         function showLoader(v) { document.getElementById('loader').style.display = v ? 'block' : 'none'; }
-
+        function changeLocation() { fetchData(); }
         init();
     </script>
 </body>
